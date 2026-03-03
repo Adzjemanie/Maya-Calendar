@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Maya Calendar App (Long Count • Tzolk'in • Haab') + toon & dagnnaam uitleg</title>
+  <title>Maya Calendar App — Focus Mode</title>
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     body { margin: 0; background: #0b0e14; color: #e7eaf0; }
@@ -11,8 +11,7 @@
     .card { background: #121826; border: 1px solid #1f2a3d; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
     h1 { font-size: 22px; margin: 0 0 8px; }
     p { margin: 8px 0; color: #b9c2d3; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
-    @media (min-width: 820px) { .grid { grid-template-columns: 1.1fr .9fr; } }
+
     label { display: block; font-size: 12px; color: #b9c2d3; margin-bottom: 6px; }
     input, select, button {
       width: 100%; box-sizing: border-box;
@@ -22,23 +21,29 @@
     }
     button { cursor: pointer; background: #1a2540; border-color: #2b3a59; }
     button:hover { filter: brightness(1.08); }
+
     .row { display: grid; grid-template-columns: 1fr; gap: 10px; }
     @media (min-width: 520px) { .row { grid-template-columns: 1fr 1fr; } }
+
     .out { margin-top: 14px; padding: 14px; border-radius: 14px; background: #0f1420; border: 1px solid #27344d; }
     .big { font-size: 18px; font-weight: 650; letter-spacing: .2px; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+
     .kv { display: grid; grid-template-columns: 140px 1fr; gap: 10px; margin-top: 10px; align-items: start; }
     .k { color: #b9c2d3; font-size: 12px; padding-top: 3px; }
     .v { font-size: 14px; }
+
     .hint { font-size: 12px; color: #8fa0bf; margin-top: 10px; line-height: 1.35; }
     .pill { display:inline-block; padding: 4px 10px; border:1px solid #27344d; border-radius: 999px; background:#0b1020; color:#b9c2d3; font-size: 12px; }
-    details { margin-top: 10px; border: 1px solid #27344d; border-radius: 12px; padding: 10px 12px; background: #0b1020; }
+
+    details { margin-top: 12px; border: 1px solid #27344d; border-radius: 12px; padding: 10px 12px; background: #0b1020; }
     summary { cursor: pointer; font-size: 13px; color: #d6dcff; user-select: none; }
     summary::-webkit-details-marker { display:none; }
+
     .tone-title { margin-top: 10px; font-size: 13px; color: #d6dcff; }
-    .tone-body { margin-top: 8px; color: #b9c2d3; font-size: 13px; line-height: 1.45; }
-    .tone-bullets { margin: 10px 0 0 18px; color: #b9c2d3; font-size: 13px; line-height: 1.45; }
-    .tone-bullets li { margin: 4px 0; }
+    .tone-body { margin-top: 12px; color: #cfd6e6; font-size: 15px; line-height: 1.7; max-width: 720px; }
+    .tone-bullets { margin: 12px 0 0 20px; color: #cfd6e6; font-size: 15px; line-height: 1.7; max-width: 720px; }
+    .tone-bullets li { margin: 6px 0; }
     .smallmono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; color: #b9c2d3; }
   </style>
 </head>
@@ -46,193 +51,106 @@
   <div class="wrap">
     <div class="card">
       <h1>Maya Calendar App</h1>
-      <p>Rekent Long Count, Tzolk’in en Haab’ uit een (Gregoriaanse) datum. Inclusief uitgebreide uitleg voor <b>dagtoon (1–13)</b> én <b>dagnnaam (20)</b>. Werkt volledig offline.</p>
+      <p>Focus mode: zonder het “Wat je ziet”-deel. De uitleg (toon + dag) gebruikt de volledige breedte voor betere leesbaarheid.</p>
 
-      <div class="grid">
+      <div class="row" style="margin-top:14px;">
         <div>
-          <div class="row">
-            <div>
-              <label for="date">Datum</label>
-              <input id="date" type="date" />
-            </div>
-            <div>
-              <label for="corr">Correlatie (JDN basis)</label>
-              <select id="corr">
-                <option value="584283">GMT (584283)</option>
-                <option value="584285">584285</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:10px;">
-            <div>
-              <label>&nbsp;</label>
-              <button id="calc">Bereken</button>
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <button id="today">Vandaag</button>
-            </div>
-          </div>
-
-          <div class="out" id="out" aria-live="polite">
-            <div class="big">—</div>
-            <div class="hint">Kies een datum en klik <span class="pill">Bereken</span>.</div>
-          </div>
+          <label for="date">Datum</label>
+          <input id="date" type="date" />
         </div>
-
-        <div class="out">
-          <div class="big">Wat je ziet</div>
-          <div class="kv">
-            <div class="k">Long Count</div>
-            <div class="v">baktun.katun.tun.uinal.k’in</div>
-
-            <div class="k">Tzolk’in</div>
-            <div class="v">toon (1–13) + dagnaam (20)</div>
-
-            <div class="k">Haab’</div>
-            <div class="v">dag (0–19) + maand (18×20 + Wayeb’)</div>
-
-            <div class="k">Correlatie</div>
-            <div class="v">Anker: 0.0.0.0.0 = 4 Ajaw 8 Kumk’u (JDN = correlatie)</div>
-          </div>
-
-          <details>
-            <summary>Hoe lees je Tzolk’in?</summary>
-            <div class="tone-body">
-              De Tzolk’in combineert twee cycli: een <b>toon</b> (1–13) en een <b>dagnnaam</b> (20).<br>
-              Lees het als: <span class="smallmono">toon = hoe</span> (beweging/ritme) en <span class="smallmono">dagnnaam = wat</span> (thema/kwaliteit).
-              Samen vormt het een dagfocus.
-            </div>
-          </details>
+        <div>
+          <label for="corr">Correlatie (JDN basis)</label>
+          <select id="corr">
+            <option value="584283">GMT (584283)</option>
+            <option value="584285">584285</option>
+          </select>
         </div>
       </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label>&nbsp;</label>
+          <button id="calc">Bereken</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="today">Vandaag</button>
+        </div>
+      </div>
+
+      <div class="out" id="out" aria-live="polite">
+        <div class="big">—</div>
+        <div class="hint">Kies een datum en klik <span class="pill">Bereken</span>.</div>
+      </div>
+
+      <details>
+        <summary>Hoe lees je Tzolk’in?</summary>
+        <div class="tone-body">
+          De Tzolk’in combineert twee cycli: een <b>toon</b> (1–13) en een <b>dagnnaam</b> (20).<br>
+          Lees het als: <span class="smallmono">toon = hoe</span> (beweging/ritme) en <span class="smallmono">dagnnaam = wat</span> (thema/kwaliteit).
+          Samen vormt het een dagfocus.
+        </div>
+      </details>
     </div>
   </div>
 
 <script>
 (() => {
-  // --- Maya names ---
   const TZOLKIN_NAMES = [
-    "Imix", "Ik’", "Ak’b’al", "K’an", "Chikchan", "Kimi", "Manik’", "Lamat", "Muluk", "Ok",
-    "Chuwen", "Eb’", "B’en", "Ix", "Men", "K’ib’", "Kaban", "Etz’nab’", "Kawak", "Ajaw"
+    "Imix","Ik’","Ak’b’al","K’an","Chikchan","Kimi","Manik’","Lamat","Muluk","Ok",
+    "Chuwen","Eb’","B’en","Ix","Men","K’ib’","Kaban","Etz’nab’","Kawak","Ajaw"
   ];
 
   const HAAB_MONTHS = [
-    "Pop", "Wo’", "Sip", "Sotz’", "Sek", "Xul", "Yaxk’in", "Mol", "Ch’en", "Yax",
-    "Sak’", "Keh", "Mak", "K’ank'in", "Muwan", "Pax", "K’ayab", "Kumk’u", "Wayeb’"
+    "Pop","Wo’","Sip","Sotz’","Sek","Xul","Yaxk’in","Mol","Ch’en","Yax",
+    "Sak’","Keh","Mak","K’ank'in","Muwan","Pax","K’ayab","Kumk’u","Wayeb’"
   ];
 
-  // --- Uitgebreide dagtoon-uitleg (1–13) ---
   const TZOLKIN_TONES = {
-    1: { name:"Magnetisch", short:"Intentie • aantrekking • begin",
-      body:"Toon 1 zet de richting. Het is de vonk die iets zichtbaar maakt: waar gaat je aandacht naartoe en wat wil je uitnodigen? Deze toon helpt je om helder te kiezen en je ‘ja’ te voelen. Als je veel tegelijk wilt, brengt toon 1 je terug naar de kern.",
-      bullets:["Dagfocus: formuleer één duidelijke intentie.","Vraag: Wat wil ik aantrekken — en waarom?","Valkuil: alles openlaten → dan trekt het alle kanten op."] },
-    2: { name:"Lunaire", short:"Dualiteit • uitdaging • balans",
-      body:"Toon 2 laat contrast zien: jij/ander, licht/schaduw, wens/weerstand. Het is geen ‘fout’, maar informatie. Wat wringt, wijst op iets dat om afstemming vraagt. Toon 2 helpt grenzen, keuzes en samenwerking zuiverder te maken.",
-      bullets:["Dagfocus: benoem het spanningsveld zonder het meteen op te lossen.","Vraag: Waar zeg ik ‘ja’ terwijl ik ‘nee’ voel?","Valkuil: polariseren (of/of) i.p.v. integreren (en/en)."] },
-    3: { name:"Elektrisch", short:"Activatie • beweging • eerste actie",
-      body:"Toon 3 brengt je plan in beweging. Klein maar echt: een stap, een contact, een start. Het gaat om het laten stromen van energie door te doen. Actie is hier een katalysator — niet perfectie.",
-      bullets:["Dagfocus: zet één concrete stap binnen 30 minuten.","Vraag: Welke actie maakt dit levend?","Valkuil: wachten op zekerheid vóór je beweegt."] },
-    4: { name:"Zelf-bestaand", short:"Vorm • structuur • definitie",
-      body:"Toon 4 geeft kaders: wat is het precies, wat hoort erbij, wat niet? Het is de toon van plannen, ordenen en afbakenen. Je maakt het ‘bouwbaar’ en daardoor ook deelbaar.",
-      bullets:["Dagfocus: maak een simpele structuur (lijst, stappen, tijdblok).","Vraag: Welke vorm past hierbij?","Valkuil: te strak plannen waardoor ruimte verdwijnt."] },
-    5: { name:"Overtone", short:"Kracht • focus • uitstraling",
-      body:"Toon 5 verzamelt energie en zet het in. Je trekt middelen aan: tijd, hulp, aandacht, vertrouwen. Deze toon werkt als een centrum: waar jij helder bent, volgt de rest gemakkelijker.",
-      bullets:["Dagfocus: kies een focuspunt en bescherm het.","Vraag: Wat geeft dit kracht — en wat lekt energie?","Valkuil: alles zelf willen dragen i.p.v. vragen/delegeren."] },
-    6: { name:"Ritmisch", short:"Balans • organisatie • flow",
-      body:"Toon 6 zoekt het ritme dat werkt. Niet harder, maar slimmer: tempo, herhaling en balans. Je merkt wat ‘klopt’ in je dag: welke gewoontes ondersteunen je en welke verstoren de stroom.",
-      bullets:["Dagfocus: breng je dag in een haalbaar ritme (werk/pauze).","Vraag: Wat brengt stabiliteit zonder te verkrampen?","Valkuil: te veel optimaliseren → de flow verdwijnt."] },
-    7: { name:"Resonant", short:"Afstemming • inspiratie • luisteren",
-      body:"Toon 7 is de middenlijn: je stemt af. Het is een goede dag om te luisteren — naar signalen, synchroniciteit, lichaam en stilte. Inspiratie komt niet door te duwen, maar door te ontvangen.",
-      bullets:["Dagfocus: stilte- of reflectiemoment (5–10 min).","Vraag: Wat wil gehoord worden als ik niets invul?","Valkuil: overprikkeling → afstemming wordt lastig."] },
-    8: { name:"Galactisch", short:"Integriteit • harmonie • voorbeeld",
-      body:"Toon 8 vraagt: leef je wat je weet? Integriteit is de sleutel. Wat je doet, wil kloppen met je waarden. Deze toon ondersteunt herstellen, harmoniseren en rechtzetten wat scheef voelt.",
-      bullets:["Dagfocus: één keuze maken die je waarden weerspiegelt.","Vraag: Waar is er mismatch tussen woorden en daden?","Valkuil: perfectionisme vermomd als integriteit."] },
-    9: { name:"Zonne-energie", short:"Verdieping • volharding • toewijding",
-      body:"Toon 9 vergroot diepte. Je ziet de grotere context en wat volhouden waard is. Het is een goede toon voor afronden, bijslijpen en doorzetten — met geduld en een langere adem.",
-      bullets:["Dagfocus: werk aan iets groots in kleine blokken.","Vraag: Wat verdient mijn toewijding op de lange termijn?","Valkuil: te veel tegelijk → diepte wordt druk."] },
-    10:{ name:"Planetair", short:"Manifestatie • zichtbaar worden",
-      body:"Toon 10 maakt het tastbaar: publiceren, laten zien, opleveren. Het gaat om realiteit: wat is er nu daadwerkelijk? Deze toon helpt dingen op aarde te zetten.",
-      bullets:["Dagfocus: lever iets af (al is het een v1).","Vraag: Hoe kan ik dit concreet maken?","Valkuil: blijven schaven → het komt nooit naar buiten."] },
-    11:{ name:"Spectraal", short:"Loslaten • bevrijding",
-      body:"Toon 11 ruimt op. Wat vastzit, mag los: oude afspraken, rollen, rommel, overtuigingen of taken die niet meer kloppen. Bevrijding ontstaat door eerlijk weg te halen wat niet meer voedt.",
-      bullets:["Dagfocus: verwijder 1 ding (taak/object/afspraak) dat niet meer past.","Vraag: Wat houdt mij vast zonder reden?","Valkuil: te rigoureus weggooien zonder te voelen wat je wél wilt."] },
-    12:{ name:"Kristallijn", short:"Samenwerking • delen • inzicht",
-      body:"Toon 12 verbindt: inzichten worden gedeeld en krijgen betekenis in relatie. Goede toon voor samenwerken, feedback, community en het samenbrengen van losse onderdelen tot één geheel.",
-      bullets:["Dagfocus: deel een inzicht of vraag om feedback.","Vraag: Met wie wordt dit sterker?","Valkuil: iedereen tevreden willen houden i.p.v. helder te zijn."] },
-    13:{ name:"Kosmisch", short:"Voltooiing • transcendentie • terugkeer",
-      body:"Toon 13 sluit de cyclus af. Niet alleen klaar, maar ook wijsheid meenemen. Wat heb je geleerd, wat neem je mee naar de volgende ronde? Sterk voor reflectie en afronding met betekenis.",
-      bullets:["Dagfocus: rond iets bewust af (met een klein slot).","Vraag: Wat is de les die ik meeneem?","Valkuil: te snel doorrennen naar het volgende."] }
+    1:{name:"Magnetisch",short:"Intentie • aantrekking • begin",body:"Toon 1 zet de richting. Het is de vonk die iets zichtbaar maakt: waar gaat je aandacht naartoe en wat wil je uitnodigen? Deze toon helpt je om helder te kiezen en je ‘ja’ te voelen. Als je veel tegelijk wilt, brengt toon 1 je terug naar de kern.",bullets:["Dagfocus: formuleer één duidelijke intentie.","Vraag: Wat wil ik aantrekken — en waarom?","Valkuil: alles openlaten → dan trekt het alle kanten op."]},
+    2:{name:"Lunaire",short:"Dualiteit • uitdaging • balans",body:"Toon 2 laat contrast zien: jij/ander, licht/schaduw, wens/weerstand. Het is geen ‘fout’, maar informatie. Wat wringt, wijst op iets dat om afstemming vraagt. Toon 2 helpt grenzen, keuzes en samenwerking zuiverder te maken.",bullets:["Dagfocus: benoem het spanningsveld zonder het meteen op te lossen.","Vraag: Waar zeg ik ‘ja’ terwijl ik ‘nee’ voel?","Valkuil: polariseren (of/of) i.p.v. integreren (en/en)."]},
+    3:{name:"Elektrisch",short:"Activatie • beweging • eerste actie",body:"Toon 3 brengt je plan in beweging. Klein maar echt: een stap, een contact, een start. Het gaat om het laten stromen van energie door te doen. Actie is hier een katalysator — niet perfectie.",bullets:["Dagfocus: zet één concrete stap binnen 30 minuten.","Vraag: Welke actie maakt dit levend?","Valkuil: wachten op zekerheid vóór je beweegt."]},
+    4:{name:"Zelf-bestaand",short:"Vorm • structuur • definitie",body:"Toon 4 geeft kaders: wat is het precies, wat hoort erbij, wat niet? Het is de toon van plannen, ordenen en afbakenen. Je maakt het ‘bouwbaar’ en daardoor ook deelbaar.",bullets:["Dagfocus: maak een simpele structuur (lijst, stappen, tijdblok).","Vraag: Welke vorm past hierbij?","Valkuil: te strak plannen waardoor ruimte verdwijnt."]},
+    5:{name:"Overtone",short:"Kracht • focus • uitstraling",body:"Toon 5 verzamelt energie en zet het in. Je trekt middelen aan: tijd, hulp, aandacht, vertrouwen. Deze toon werkt als een centrum: waar jij helder bent, volgt de rest gemakkelijker.",bullets:["Dagfocus: kies een focuspunt en bescherm het.","Vraag: Wat geeft dit kracht — en wat lekt energie?","Valkuil: alles zelf willen dragen i.p.v. vragen/delegeren."]},
+    6:{name:"Ritmisch",short:"Balans • organisatie • flow",body:"Toon 6 zoekt het ritme dat werkt. Niet harder, maar slimmer: tempo, herhaling en balans. Je merkt wat ‘klopt’ in je dag: welke gewoontes ondersteunen je en welke verstoren de stroom.",bullets:["Dagfocus: breng je dag in een haalbaar ritme (werk/pauze).","Vraag: Wat brengt stabiliteit zonder te verkrampen?","Valkuil: te veel optimaliseren → de flow verdwijnt."]},
+    7:{name:"Resonant",short:"Afstemming • inspiratie • luisteren",body:"Toon 7 is de middenlijn: je stemt af. Het is een goede dag om te luisteren — naar signalen, synchroniciteit, lichaam en stilte. Inspiratie komt niet door te duwen, maar door te ontvangen.",bullets:["Dagfocus: stilte- of reflectiemoment (5–10 min).","Vraag: Wat wil gehoord worden als ik niets invul?","Valkuil: overprikkeling → afstemming wordt lastig."]},
+    8:{name:"Galactisch",short:"Integriteit • harmonie • voorbeeld",body:"Toon 8 vraagt: leef je wat je weet? Integriteit is de sleutel. Wat je doet, wil kloppen met je waarden. Deze toon ondersteunt herstellen, harmoniseren en rechtzetten wat scheef voelt.",bullets:["Dagfocus: één keuze maken die je waarden weerspiegelt.","Vraag: Waar is er mismatch tussen woorden en daden?","Valkuil: perfectionisme vermomd als integriteit."]},
+    9:{name:"Zonne-energie",short:"Verdieping • volharding • toewijding",body:"Toon 9 vergroot diepte. Je ziet de grotere context en wat volhouden waard is. Het is een goede toon voor afronden, bijslijpen en doorzetten — met geduld en een langere adem.",bullets:["Dagfocus: werk aan iets groots in kleine blokken.","Vraag: Wat verdient mijn toewijding op de lange termijn?","Valkuil: te veel tegelijk → diepte wordt druk."]},
+    10:{name:"Planetair",short:"Manifestatie • zichtbaar worden",body:"Toon 10 maakt het tastbaar: publiceren, laten zien, opleveren. Het gaat om realiteit: wat is er nu daadwerkelijk? Deze toon helpt dingen op aarde te zetten.",bullets:["Dagfocus: lever iets af (al is het een v1).","Vraag: Hoe kan ik dit concreet maken?","Valkuil: blijven schaven → het komt nooit naar buiten."]},
+    11:{name:"Spectraal",short:"Loslaten • bevrijding",body:"Toon 11 ruimt op. Wat vastzit, mag los: oude afspraken, rollen, rommel, overtuigingen of taken die niet meer kloppen. Bevrijding ontstaat door eerlijk weg te halen wat niet meer voedt.",bullets:["Dagfocus: verwijder 1 ding (taak/object/afspraak) dat niet meer past.","Vraag: Wat houdt mij vast zonder reden?","Valkuil: te rigoureus weggooien zonder te voelen wat je wél wilt."]},
+    12:{name:"Kristallijn",short:"Samenwerking • delen • inzicht",body:"Toon 12 verbindt: inzichten worden gedeeld en krijgen betekenis in relatie. Goede toon voor samenwerken, feedback, community en het samenbrengen van losse onderdelen tot één geheel.",bullets:["Dagfocus: deel een inzicht of vraag om feedback.","Vraag: Met wie wordt dit sterker?","Valkuil: iedereen tevreden willen houden i.p.v. helder te zijn."]},
+    13:{name:"Kosmisch",short:"Voltooiing • transcendentie • terugkeer",body:"Toon 13 sluit de cyclus af. Niet alleen klaar, maar ook wijsheid meenemen. Wat heb je geleerd, wat neem je mee naar de volgende ronde? Sterk voor reflectie en afronding met betekenis.",bullets:["Dagfocus: rond iets bewust af (met een klein slot).","Vraag: Wat is de les die ik meeneem?","Valkuil: te snel doorrennen naar het volgende."]}
   };
 
-  // --- Uitgebreide dagnnaam-uitleg (20) ---
-  // Noot: Dit zijn praktische interpretaties (niet bedoeld als strikt academische definities).
   const TZOLKIN_DAYS = {
-    "Imix":     { title:"Imix", short:"Oerwater • voeding • begin",
-      body:"Imix draagt het ‘oer’ in zich: voeding, ontstaan, intuïtieve impulsen. Het kan creatief en vruchtbaar zijn, maar ook chaotisch als alles tegelijk binnenkomt.",
-      bullets:["Voed jezelf (lichamelijk/mentaal).","Begin klein: zaadje → stap.","Let op ruis/overweldiging; kies één kanaal."] },
-    "Ik’":      { title:"Ik’", short:"Wind • adem • woord",
-      body:"Ik’ staat voor adem, communicatie en beweging van geest. Een dag om te spreken, schrijven, afstemmen en ‘lucht’ te brengen waar het vastzit.",
-      bullets:["Zeg het eenvoudig en eerlijk.","Ademwerk helpt richting voelen.","Vermijd praten om te vullen; kies betekenis."] },
-    "Ak’b’al":  { title:"Ak’b’al", short:"Nacht • droom • innerlijke ruimte",
-      body:"Ak’b’al gaat over de nachtelijke wereld: dromen, het onzichtbare en innerlijke rust. Een goede dag voor reflectie, herstel en het toelaten van subtiele signalen.",
-      bullets:["Schrijf dromen/gevoelens op.","Zoek stilte i.p.v. antwoorden forceren.","Werk met schaduw: wat wil gezien worden?"] },
-    "K’an":     { title:"K’an", short:"Zaad • groei • potentieel",
-      body:"K’an brengt de energie van het zaad: waarde, rijping en potentieel. Het nodigt uit om te kiezen wat je wil laten groeien en om je aandacht te ‘bemesten’.",
-      bullets:["Investeer in wat echt waarde heeft.","Kies 1 groeipunt voor 30 dagen.","Pas op voor hebzucht/‘meer is beter’."] },
-    "Chikchan": { title:"Chikchan", short:"Levenskracht • lichaam • instinct",
-      body:"Chikchan is de slang/levenskracht: sensatie, instinct en lichamelijke waarheid. Ideaal voor embodied keuzes, vitaliteit en het volgen van je ‘ja’ in het lijf.",
-      bullets:["Check-in: wat voelt levend?","Beweeg om spanning te ontladen.","Vermijd impuls zonder aanwezigheid."] },
-    "Kimi":     { title:"Kimi", short:"Overgang • loslaten • stilte",
-      body:"Kimi draagt de energie van overgang: afronden, rouwen, transformeren. Niet dramatisch, maar eerlijk: wat is klaar? Wat sterft zodat iets nieuws kan ontstaan?",
-      bullets:["Rond af, schoon op, sluit cirkels.","Gun emoties ruimte zonder verhaal.","Pas op voor cynisme; kies zachtheid."] },
-    "Manik’":   { title:"Manik’", short:"Hand • heling • vaardigheid",
-      body:"Manik’ gaat over de hand: doen, maken, helen, ambacht. Een dag om iets praktisch te herstellen of een vaardigheid te oefenen tot het ‘klikt’.",
-      bullets:["Maak iets met je handen.","Breng heling via kleine acties.","Valkuil: ‘fixen’ zonder te luisteren."] },
-    "Lamat":    { title:"Lamat", short:"Ster • schoonheid • overvloed",
-      body:"Lamat draait om harmonie, schoonheid en natuurlijke overvloed. Het versterkt wat je aandacht geeft — daarom is intentie extra belangrijk.",
-      bullets:["Voed schoonheid (omgeving, lichaam, kunst).","Focus op wat je wil vergroten.","Valkuil: verstrooiing/pleasen."] },
-    "Muluk":    { title:"Muluk", short:"Water • emotie • offer",
-      body:"Muluk is water en emotie: zuivering, stroming, gevoeligheid. Het kan vragen om eerlijk voelen en het laten bewegen van wat lang vastzat.",
-      bullets:["Hydrateer / reinig / laat stromen.","Benoem gevoelens zonder oordeel.","Valkuil: overspoeld raken → ground jezelf."] },
-    "Ok":       { title:"Ok", short:"Hond • loyaliteit • hart",
-      body:"Ok brengt trouw, vriendschap en hart-ethiek. Het nodigt uit om relaties te voeden en liefde praktisch te maken — niet alleen als gevoel.",
-      bullets:["Doe één loyale, liefdevolle actie.","Check: waar ben ik trouw aan?","Valkuil: jezelf wegcijferen voor ‘loyaal’ zijn."] },
-    "Chuwen":   { title:"Chuwen", short:"Aap • spel • creativiteit",
-      body:"Chuwen is speels en creatief: kunst, humor, experiment. Perfect om te maken, te improviseren en met nieuwsgierigheid te leren.",
-      bullets:["Speel/creëer zonder doel.","Maak een ‘slecht’ eerste ontwerp (v1).","Valkuil: alles als grap → vermijd diepte."] },
-    "Eb’":      { title:"Eb’", short:"Pad • gezondheid • ontwikkeling",
-      body:"Eb’ gaat over het pad: dagelijkse groei, welzijn en het leren door stappen. Het is een goede dag voor routines, herstel en richting in je levensweg.",
-      bullets:["Kies een routine die je draagt.","Neem één stap op je pad.","Valkuil: vergelijken → blijf bij je eigen tempo."] },
-    "B’en":     { title:"B’en", short:"Riet • integriteit • leiding",
-      body:"B’en staat voor rechtop staan en helder leiden (ook jezelf). Het gaat om waardigheid, grenzen en de moed om koers te houden.",
-      bullets:["Zet één duidelijke grens.","Leid door voorbeeld, niet door druk.","Valkuil: starheid/‘mijn weg of niets’."] },
-    "Ix":       { title:"Ix", short:"Jaguar • mysterie • aarde-magie",
-      body:"Ix verbindt met aarde, het mysterie en innerlijke kracht. Een dag voor respect, intuïtie en stille moed. Wat je in het geheim voedt, groeit hier sterk.",
-      bullets:["Ga de natuur in of ground bewust.","Werk met intuïtie/ritueel.","Valkuil: controle willen over het onbekende."] },
-    "Men":      { title:"Men", short:"Adelaar • visie • overzicht",
-      body:"Men geeft hoogte en visie: het grotere plaatje, strategie, toekomst. Goed voor plannen met overzicht en het kiezen van een richting die klopt.",
-      bullets:["Zoom uit: wat is de kern?","Maak 1 strategische keuze.","Valkuil: te veel in je hoofd → vergeet het hart."] },
-    "K’ib’":    { title:"K’ib’", short:"Innerlijk vuur • reflectie • vergeving",
-      body:"K’ib’ gaat over innerlijke reflectie, geweten en vergeving. Een dag om te helen door te begrijpen, te verlichten en eerlijk terug te kijken.",
-      bullets:["Schrijf: wat wil ik vergeven (mij/ander)?","Kies eenvoud en stilte.","Valkuil: blijven hangen in schuld/zelfkritiek."] },
-    "Kaban":    { title:"Kaban", short:"Aarde • synchroniciteit • evolutie",
-      body:"Kaban is de aarde in beweging: groei, verandering en timing. Het helpt je te voelen wat ‘nu’ klopt, en om mee te bewegen met tekenen en ritme.",
-      bullets:["Let op synchroniciteiten (maar blijf nuchter).","Maak een keuze die evolutie ondersteunt.","Valkuil: onrust → aarden, dan bewegen."] },
-    "Etz’nab’": { title:"Etz’nab’", short:"Vuursteen • spiegel • waarheid",
-      body:"Etz’nab’ is de spiegel en de scherpe rand van waarheid. Het snijdt door illusie heen. Goede dag voor eerlijkheid, feedback en helder beslissen.",
-      bullets:["Vraag: wat is de simpele waarheid?","Kies helder communiceren.","Valkuil: scherpte zonder compassie."] },
-    "Kawak":    { title:"Kawak", short:"Storm • reiniging • doorbraak",
-      body:"Kawak brengt stormenergie: opschonen, ontladen en doorbraken. Het kan intens voelen, maar werkt vaak als reset naar meer authenticiteit.",
-      bullets:["Laat spanning los (bewegen, opruimen, huilen).","Maak ruimte voor een doorbraak.","Valkuil: drama voeden i.p.v. zuiveren."] },
-    "Ajaw":     { title:"Ajaw", short:"Zon • bewustzijn • voltooiing",
-      body:"Ajaw staat voor licht, bewustzijn en afronding. Het is een dag om te verlichten: wat is essentieel, wat mag gezien worden, wat rond je waardig af?",
-      bullets:["Kies één essentie en maak het helder.","Vier wat af is; erken groei.","Valkuil: ego i.p.v. licht delen."] }
+    "Imix":{title:"Imix",short:"Oerwater • voeding • begin",body:"Imix draagt het ‘oer’ in zich: voeding, ontstaan, intuïtieve impulsen. Het kan creatief en vruchtbaar zijn, maar ook chaotisch als alles tegelijk binnenkomt.",bullets:["Voed jezelf (lichamelijk/mentaal).","Begin klein: zaadje → stap.","Let op ruis/overweldiging; kies één kanaal."]},
+    "Ik’":{title:"Ik’",short:"Wind • adem • woord",body:"Ik’ staat voor adem, communicatie en beweging van geest. Een dag om te spreken, schrijven, afstemmen en ‘lucht’ te brengen waar het vastzit.",bullets:["Zeg het eenvoudig en eerlijk.","Ademwerk helpt richting voelen.","Vermijd praten om te vullen; kies betekenis."]},
+    "Ak’b’al":{title:"Ak’b’al",short:"Nacht • droom • innerlijke ruimte",body:"Ak’b’al gaat over de nachtelijke wereld: dromen, het onzichtbare en innerlijke rust. Een goede dag voor reflectie, herstel en het toelaten van subtiele signalen.",bullets:["Schrijf dromen/gevoelens op.","Zoek stilte i.p.v. antwoorden forceren.","Werk met schaduw: wat wil gezien worden?"]},
+    "K’an":{title:"K’an",short:"Zaad • groei • potentieel",body:"K’an brengt de energie van het zaad: waarde, rijping en potentieel. Het nodigt uit om te kiezen wat je wil laten groeien en om je aandacht te ‘bemesten’.",bullets:["Investeer in wat echt waarde heeft.","Kies 1 groeipunt voor 30 dagen.","Pas op voor hebzucht/‘meer is beter’."]},
+    "Chikchan":{title:"Chikchan",short:"Levenskracht • lichaam • instinct",body:"Chikchan is de slang/levenskracht: sensatie, instinct en lichamelijke waarheid. Ideaal voor embodied keuzes, vitaliteit en het volgen van je ‘ja’ in het lijf.",bullets:["Check-in: wat voelt levend?","Beweeg om spanning te ontladen.","Vermijd impuls zonder aanwezigheid."]},
+    "Kimi":{title:"Kimi",short:"Overgang • loslaten • stilte",body:"Kimi draagt de energie van overgang: afronden, rouwen, transformeren. Niet dramatisch, maar eerlijk: wat is klaar? Wat sterft zodat iets nieuws kan ontstaan?",bullets:["Rond af, schoon op, sluit cirkels.","Gun emoties ruimte zonder verhaal.","Pas op voor cynisme; kies zachtheid."]},
+    "Manik’":{title:"Manik’",short:"Hand • heling • vaardigheid",body:"Manik’ gaat over de hand: doen, maken, helen, ambacht. Een dag om iets praktisch te herstellen of een vaardigheid te oefenen tot het ‘klikt’.",bullets:["Maak iets met je handen.","Breng heling via kleine acties.","Valkuil: ‘fixen’ zonder te luisteren."]},
+    "Lamat":{title:"Lamat",short:"Ster • schoonheid • overvloed",body:"Lamat draait om harmonie, schoonheid en natuurlijke overvloed. Het versterkt wat je aandacht geeft — daarom is intentie extra belangrijk.",bullets:["Voed schoonheid (omgeving, lichaam, kunst).","Focus op wat je wil vergroten.","Valkuil: verstrooiing/pleasen."]},
+    "Muluk":{title:"Muluk",short:"Water • emotie • offer",body:"Muluk is water en emotie: zuivering, stroming, gevoeligheid. Het kan vragen om eerlijk voelen en het laten bewegen van wat lang vastzat.",bullets:["Hydrateer / reinig / laat stromen.","Benoem gevoelens zonder oordeel.","Valkuil: overspoeld raken → ground jezelf."]},
+    "Ok":{title:"Ok",short:"Hond • loyaliteit • hart",body:"Ok brengt trouw, vriendschap en hart-ethiek. Het nodigt uit om relaties te voeden en liefde praktisch te maken — niet alleen als gevoel.",bullets:["Doe één loyale, liefdevolle actie.","Check: waar ben ik trouw aan?","Valkuil: jezelf wegcijferen voor ‘loyaal’ zijn."]},
+    "Chuwen":{title:"Chuwen",short:"Aap • spel • creativiteit",body:"Chuwen is speels en creatief: kunst, humor, experiment. Perfect om te maken, te improviseren en met nieuwsgierigheid te leren.",bullets:["Speel/creëer zonder doel.","Maak een ‘slecht’ eerste ontwerp (v1).","Valkuil: alles als grap → vermijd diepte."]},
+    "Eb’":{title:"Eb’",short:"Pad • gezondheid • ontwikkeling",body:"Eb’ gaat over het pad: dagelijkse groei, welzijn en het leren door stappen. Het is een goede dag voor routines, herstel en richting in je levensweg.",bullets:["Kies een routine die je draagt.","Neem één stap op je pad.","Valkuil: vergelijken → blijf bij je eigen tempo."]},
+    "B’en":{title:"B’en",short:"Riet • integriteit • leiding",body:"B’en staat voor rechtop staan en helder leiden (ook jezelf). Het gaat om waardigheid, grenzen en de moed om koers te houden.",bullets:["Zet één duidelijke grens.","Leid door voorbeeld, niet door druk.","Valkuil: starheid/‘mijn weg of niets’."]},
+    "Ix":{title:"Ix",short:"Jaguar • mysterie • aarde-magie",body:"Ix verbindt met aarde, het mysterie en innerlijke kracht. Een dag voor respect, intuïtie en stille moed. Wat je in het geheim voedt, groeit hier sterk.",bullets:["Ga de natuur in of ground bewust.","Werk met intuïtie/ritueel.","Valkuil: controle willen over het onbekende."]},
+    "Men":{title:"Men",short:"Adelaar • visie • overzicht",body:"Men geeft hoogte en visie: het grotere plaatje, strategie, toekomst. Goed voor plannen met overzicht en het kiezen van een richting die klopt.",bullets:["Zoom uit: wat is de kern?","Maak 1 strategische keuze.","Valkuil: te veel in je hoofd → vergeet het hart."]},
+    "K’ib’":{title:"K’ib’",short:"Innerlijk vuur • reflectie • vergeving",body:"K’ib’ gaat over innerlijke reflectie, geweten en vergeving. Een dag om te helen door te begrijpen, te verlichten en eerlijk terug te kijken.",bullets:["Schrijf: wat wil ik vergeven (mij/ander)?","Kies eenvoud en stilte.","Valkuil: blijven hangen in schuld/zelfkritiek."]},
+    "Kaban":{title:"Kaban",short:"Aarde • synchroniciteit • evolutie",body:"Kaban is de aarde in beweging: groei, verandering en timing. Het helpt je te voelen wat ‘nu’ klopt, en om mee te bewegen met tekenen en ritme.",bullets:["Let op synchroniciteiten (maar blijf nuchter).","Maak een keuze die evolutie ondersteunt.","Valkuil: onrust → aarden, dan bewegen."]},
+    "Etz’nab’":{title:"Etz’nab’",short:"Vuursteen • spiegel • waarheid",body:"Etz’nab’ is de spiegel en de scherpe rand van waarheid. Het snijdt door illusie heen. Goede dag voor eerlijkheid, feedback en helder beslissen.",bullets:["Vraag: wat is de simpele waarheid?","Kies helder communiceren.","Valkuil: scherpte zonder compassie."]},
+    "Kawak":{title:"Kawak",short:"Storm • reiniging • doorbraak",body:"Kawak brengt stormenergie: opschonen, ontladen en doorbraken. Het kan intens voelen, maar werkt vaak als reset naar meer authenticiteit.",bullets:["Laat spanning los (bewegen, opruimen, huilen).","Maak ruimte voor een doorbraak.","Valkuil: drama voeden i.p.v. zuiveren."]},
+    "Ajaw":{title:"Ajaw",short:"Zon • bewustzijn • voltooiing",body:"Ajaw staat voor licht, bewustzijn en afronding. Het is een dag om te verlichten: wat is essentieel, wat mag gezien worden, wat rond je waardig af?",bullets:["Kies één essentie en maak het helder.","Vier wat af is; erken groei.","Valkuil: ego i.p.v. licht delen."]}
   };
 
-  // --- Utilities ---
   const pad2 = n => String(n).padStart(2, "0");
+  const elDate = document.getElementById("date");
+  const elCorr = document.getElementById("corr");
+  const elOut  = document.getElementById("out");
+  const btnCalc = document.getElementById("calc");
+  const btnToday = document.getElementById("today");
 
   function gregorianToJDN(y, m, d) {
     const a = Math.floor((14 - m) / 12);
@@ -273,54 +191,41 @@
     const daysSinceBase = jdn - correlation;
     const daysLC = modPositive(daysSinceBase, 1872000 * 20);
     return {
-      yy, mm, dd, jdn, daysSinceBase,
+      jdn, daysSinceBase,
       lc: longCountFromDays(daysLC),
       tz: tzolkinFromDays(modPositive(daysSinceBase, 260)),
       hb: haabFromDays(modPositive(daysSinceBase, 365))
     };
   }
 
-  // --- UI ---
-  const elDate = document.getElementById("date");
-  const elCorr = document.getElementById("corr");
-  const elOut  = document.getElementById("out");
-  const btnCalc = document.getElementById("calc");
-  const btnToday = document.getElementById("today");
-
-  function setToday() {
-    const now = new Date();
-    elDate.value = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
-  }
-
   function escapeHtml(s) {
-    return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
 
   function renderToneDetails(n) {
     const t = TZOLKIN_TONES[n];
     if (!t) return "";
-    const bullets = t.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("");
     return `
       <div class="tone-title"><b>Toon ${n}: ${escapeHtml(t.name)}</b> <span class="smallmono">(${escapeHtml(t.short)})</span></div>
       <div class="tone-body">${escapeHtml(t.body)}</div>
-      <ul class="tone-bullets">${bullets}</ul>
+      <ul class="tone-bullets">${t.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}</ul>
     `;
   }
 
   function renderDayDetails(dayName) {
     const d = TZOLKIN_DAYS[dayName];
     if (!d) return "";
-    const bullets = d.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("");
     return `
       <div class="tone-title"><b>Dagnaam: ${escapeHtml(d.title)}</b> <span class="smallmono">(${escapeHtml(d.short)})</span></div>
       <div class="tone-body">${escapeHtml(d.body)}</div>
-      <ul class="tone-bullets">${bullets}</ul>
+      <ul class="tone-bullets">${d.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}</ul>
     `;
+  }
+
+  function setToday() {
+    const now = new Date();
+    elDate.value = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
   }
 
   function render() {
@@ -340,11 +245,11 @@
         <div class="k">Tzolk’in</div>
         <div class="v mono">
           ${tzStr}
-          <details style="margin-top:10px;">
+          <details style="margin-top:12px;" open>
             <summary>Uitleg dagtoon (toon ${r.tz.number})</summary>
             ${renderToneDetails(r.tz.number)}
           </details>
-          <details>
+          <details open>
             <summary>Uitleg dag (dagnnaam ${escapeHtml(r.tz.name)})</summary>
             ${renderDayDetails(r.tz.name)}
           </details>
