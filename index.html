@@ -3,276 +3,839 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Maya Calendar App — Focus Mode</title>
+  <title>Cosmic Calendar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <style>
-    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    body { margin: 0; background: #0b0e14; color: #e7eaf0; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
-    .card { background: #121826; border: 1px solid #1f2a3d; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-    h1 { font-size: 22px; margin: 0 0 8px; }
-    p { margin: 8px 0; color: #b9c2d3; }
-
-    label { display: block; font-size: 12px; color: #b9c2d3; margin-bottom: 6px; }
-    input, select, button {
-      width: 100%; box-sizing: border-box;
-      border-radius: 12px; border: 1px solid #27344d;
-      background: #0f1420; color: #e7eaf0;
-      padding: 10px 12px; font-size: 14px;
+    :root {
+      --cream:   #f6f1e8;
+      --warm:    #eddcc0;
+      --gold:    #b07d3a;
+      --gold-lt: #c9953d;
+      --gold-dk: #8a5e20;
+      --brown:   #5c3d1e;
+      --umber:   #3d2509;
+      --burgundy:#7a1e1e;
+      --ink:     #2d1f0f;
+      --card-bg: rgba(246,241,232,0.78);
+      --shadow:  0 8px 48px rgba(80,40,10,0.13);
     }
-    button { cursor: pointer; background: #1a2540; border-color: #2b3a59; }
-    button:hover { filter: brightness(1.08); }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
-    .row { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    @media (min-width: 520px) { .row { grid-template-columns: 1fr 1fr; } }
+    body {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 17px;
+      background-color: var(--cream);
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(176,125,58,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(122,30,30,0.08) 0%, transparent 55%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      color: var(--ink);
+      min-height: 100vh;
+    }
 
-    .out { margin-top: 14px; padding: 14px; border-radius: 14px; background: #0f1420; border: 1px solid #27344d; }
-    .big { font-size: 18px; font-weight: 650; letter-spacing: .2px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    /* ── STARS ── */
+    .stars { pointer-events:none; position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .star {
+      position:absolute; border-radius:50%; background:var(--gold); opacity:0;
+      animation: twinkle var(--dur,4s) ease-in-out infinite var(--delay,0s);
+    }
+    @keyframes twinkle {
+      0%,100%{ opacity:0; transform:scale(0.6); }
+      50%    { opacity:var(--max-op,0.3); transform:scale(1); }
+    }
 
-    .kv { display: grid; grid-template-columns: 140px 1fr; gap: 10px; margin-top: 10px; align-items: start; }
-    .k { color: #b9c2d3; font-size: 12px; padding-top: 3px; }
-    .v { font-size: 14px; }
+    /* ── LAYOUT ── */
+    .wrap { position:relative; z-index:1; max-width:680px; margin:0 auto; padding:0 22px 70px; }
 
-    .hint { font-size: 12px; color: #8fa0bf; margin-top: 10px; line-height: 1.35; }
-    .pill { display:inline-block; padding: 4px 10px; border:1px solid #27344d; border-radius: 999px; background:#0b1020; color:#b9c2d3; font-size: 12px; }
+    /* ── HEADER ── */
+    header { text-align:center; padding:52px 0 38px; }
+    .header-ornament { display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:12px; }
+    .header-ornament span { display:block; width:55px; height:1px; background:var(--gold); opacity:0.55; }
+    .star-icon { color:var(--gold); font-size:17px; letter-spacing:5px; }
+    header h1 {
+      font-family:'Playfair Display',serif;
+      font-size: clamp(36px, 8vw, 58px);
+      font-weight:700; letter-spacing:0.07em;
+      color:var(--gold); line-height:1.1; margin-bottom:10px;
+    }
+    header .tagline {
+      font-family:'Lora',serif; font-style:italic;
+      font-size:16px; color:var(--brown); letter-spacing:0.04em; opacity:0.75;
+    }
 
-    details { margin-top: 12px; border: 1px solid #27344d; border-radius: 12px; padding: 10px 12px; background: #0b1020; }
-    summary { cursor: pointer; font-size: 13px; color: #d6dcff; user-select: none; }
-    summary::-webkit-details-marker { display:none; }
+    /* ── CARD ── */
+    .card {
+      background:var(--card-bg);
+      border:1px solid rgba(176,125,58,0.28);
+      border-radius:22px; padding:34px 30px;
+      box-shadow:var(--shadow); backdrop-filter:blur(8px);
+      position:relative; overflow:hidden; margin-bottom:18px;
+    }
+    .card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background:linear-gradient(90deg,transparent,var(--gold),transparent);
+    }
 
-    .tone-title { margin-top: 10px; font-size: 13px; color: #d6dcff; }
-    .tone-body { margin-top: 12px; color: #cfd6e6; font-size: 15px; line-height: 1.7; max-width: 720px; }
-    .tone-bullets { margin: 12px 0 0 20px; color: #cfd6e6; font-size: 15px; line-height: 1.7; max-width: 720px; }
-    .tone-bullets li { margin: 6px 0; }
-    .smallmono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; color: #b9c2d3; }
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family:'Lora',serif; font-style:italic;
+      font-size:12px; letter-spacing:0.18em; text-transform:uppercase;
+      color:var(--gold); margin-bottom:20px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,rgba(176,125,58,0.4),transparent); }
+
+    /* ── FORM ── */
+    .fields { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:480px){ .fields{ grid-template-columns:1fr; } }
+
+    .field-group label {
+      display:block; font-family:'Lora',serif; font-style:italic;
+      font-size:12px; letter-spacing:0.12em; color:var(--gold-dk);
+      text-transform:uppercase; margin-bottom:8px;
+    }
+    input[type="date"], select {
+      width:100%; background:rgba(255,248,235,0.9);
+      border:1px solid rgba(176,125,58,0.35); border-radius:11px;
+      padding:12px 15px; font-family:'Lora',serif; font-size:16px;
+      color:var(--ink); outline:none;
+      transition:border-color 0.2s, box-shadow 0.2s; appearance:none;
+    }
+    input[type="date"]:focus, select:focus {
+      border-color:var(--gold); box-shadow:0 0 0 3px rgba(176,125,58,0.12);
+    }
+    select {
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23b07d3a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 14px center; padding-right:38px; cursor:pointer;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
+    @media(max-width:480px){ .btn-row{ grid-template-columns:1fr; } }
+    .btn-primary, .btn-secondary {
+      border:none; border-radius:13px; cursor:pointer;
+      font-family:'Lora',serif; font-size:15px; font-style:italic;
+      letter-spacing:0.06em; padding:14px 20px; transition:all 0.2s;
+    }
+    .btn-primary {
+      background:linear-gradient(135deg,var(--gold-lt),var(--gold-dk));
+      color:#fff9f0; box-shadow:0 4px 20px rgba(176,125,58,0.35);
+    }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 28px rgba(176,125,58,0.45); }
+    .btn-secondary {
+      background:transparent; border:1px solid rgba(176,125,58,0.45); color:var(--gold-dk);
+    }
+    .btn-secondary:hover { background:rgba(176,125,58,0.08); border-color:var(--gold); }
+
+    /* ── RESULT AREA ── */
+    .result-area { margin-top:26px; border-top:1px solid rgba(176,125,58,0.18); padding-top:26px; }
+
+    /* ── LONG COUNT ── */
+    .long-count-display {
+      text-align:center; padding:22px;
+      background:linear-gradient(135deg,rgba(122,30,30,0.07),rgba(176,125,58,0.07));
+      border:1px solid rgba(176,125,58,0.22); border-radius:15px; margin-bottom:22px;
+    }
+    .long-count-label { font-style:italic; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); opacity:0.8; margin-bottom:10px; }
+    .long-count-number { font-family:'Playfair Display',serif; font-size:30px; font-weight:600; color:var(--brown); letter-spacing:0.05em; }
+
+    /* ── TZOLKIN BLOCK ── */
+    .tzolkin-block {
+      background:linear-gradient(135deg,rgba(122,30,30,0.06) 0%,rgba(176,125,58,0.08) 100%);
+      border:1px solid rgba(176,125,58,0.25); border-radius:18px; padding:24px; margin-bottom:16px;
+    }
+    .tzolkin-name-row { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:8px; }
+    .tzolkin-number { font-family:'Playfair Display',serif; font-size:48px; font-weight:700; color:var(--gold); line-height:1; }
+    .tzolkin-name   { font-family:'Playfair Display',serif; font-size:30px; font-style:italic; color:var(--brown); }
+    .tzolkin-sub    { font-size:14px; font-style:italic; color:var(--gold-dk); opacity:0.85; margin-bottom:16px; }
+
+    /* ── MOON BLOCK ── */
+    .moon-block {
+      background:rgba(255,248,235,0.55);
+      border:1px solid rgba(176,125,58,0.22); border-radius:18px; padding:24px; margin-bottom:16px;
+    }
+    .moon-main-row { display:flex; align-items:center; gap:20px; margin-bottom:12px; }
+    .moon-symbol { font-size:52px; line-height:1; }
+    .moon-info {}
+    .moon-phase-name { font-family:'Playfair Display',serif; font-size:24px; font-style:italic; color:var(--brown); }
+    .moon-illumination { font-size:15px; color:var(--gold-dk); margin-top:4px; }
+    .moon-next { font-size:13px; font-style:italic; color:var(--brown); opacity:0.7; margin-top:10px; border-top:1px solid rgba(176,125,58,0.15); padding-top:10px; }
+
+    .iching-header {
+      display: flex; align-items: center; gap: 18px; margin-bottom: 14px;
+    }
+    .iching-tri {
+      font-size: 52px; line-height: 1; color: var(--brown); font-family: serif;
+      min-width: 54px; text-align: center; flex-shrink: 0;
+    }
+    .iching-head-info { display: flex; flex-direction: column; gap: 4px; }
+    .iching-head-meta {
+      font-size: 13px; font-style: italic; color: var(--gold-dk); opacity: 0.85;
+    }
+
+    .section-sublabel {
+      font-family:'Playfair Display',serif; font-size:16px; font-style:italic;
+      color:var(--brown); margin-bottom:10px; padding-bottom:6px;
+      border-bottom:1px solid rgba(176,125,58,0.18);
+    }
+
+    /* ── COMBINED READING ── */
+    .combined-reading {
+      margin-top: 16px;
+      padding: 16px 18px;
+      background: rgba(122,30,30,0.05);
+      border: 1px solid rgba(176,125,58,0.2);
+      border-radius: 13px;
+    }
+    .combined-label {
+      font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      font-style: italic; color: var(--gold); opacity: 0.8; margin-bottom: 10px;
+    }
+    .combined-body {
+      font-size: 16px; line-height: 1.8; color: var(--umber);
+    }
+    .combined-body em { font-style: italic; color: var(--brown); font-weight: 500; }
+
+    .iching-symbol-inline {
+      font-size: 32px; line-height: 1; color: var(--brown); font-family: serif;
+    }
+
+    /* ── MOON SVG CONTAINER ── */
+    .moon-symbol { line-height: 1; display: flex; align-items: center; }
+
+    /* ── CELTIC BLOCK (no emoji) ── */
+    .celtic-block {
+      background:rgba(255,248,235,0.55);
+      border:1px solid rgba(176,125,58,0.22); border-radius:18px; padding:24px; margin-bottom:16px;
+    }
+    .celtic-main-row { display:flex; align-items:center; gap:16px; margin-bottom:8px; }
+    .celtic-symbol { font-size:40px; line-height:1; }
+    .celtic-season-name { font-family:'Playfair Display',serif; font-size:24px; font-style:italic; color:var(--brown); }
+    .celtic-keywords { font-size:15px; color:var(--gold-dk); margin-top:4px; font-style:italic; }
+    .celtic-next { font-size:13px; font-style:italic; color:var(--brown); opacity:0.7; margin-top:10px; border-top:1px solid rgba(176,125,58,0.15); padding-top:10px; }
+
+    /* ── EXPAND BLOCKS ── */
+    .expand-block { border-top:1px solid rgba(176,125,58,0.15); padding-top:16px; margin-top:16px; }
+    details {}
+    summary {
+      list-style:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:space-between;
+      font-family:'Playfair Display',serif; font-size:16px; font-style:italic;
+      color:var(--brown); user-select:none; padding:4px 0;
+    }
+    summary::-webkit-details-marker{ display:none; }
+    summary::after { content:'＋'; font-style:normal; font-size:18px; color:var(--gold); opacity:0.7; transition:transform 0.2s; }
+    details[open] summary::after { content:'−'; }
+
+    .detail-body {
+      margin-top:16px; padding:18px;
+      background:rgba(255,248,235,0.7); border-radius:12px;
+      border-left:2px solid rgba(176,125,58,0.35);
+    }
+    .detail-sub  { font-size:13px; font-style:italic; letter-spacing:0.08em; color:var(--gold-dk); opacity:0.85; margin-bottom:12px; }
+    .detail-text { font-size:16px; line-height:1.8; color:var(--umber); }
+    .detail-bullets { margin:12px 0 0 0; padding:0; list-style:none; }
+    .detail-bullets li {
+      font-size:15px; line-height:1.65; color:var(--brown);
+      padding:6px 0 6px 22px; position:relative;
+    }
+    .detail-bullets li::before { content:'✦'; position:absolute; left:0; color:var(--gold); font-size:9px; top:10px; }
+
+    /* ── META CARDS ── */
+    .meta-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-top:16px; }
+    .meta-card { background:rgba(255,248,235,0.65); border:1px solid rgba(176,125,58,0.18); border-radius:13px; padding:14px 16px; text-align:center; }
+    .meta-card-label { font-size:11px; letter-spacing:0.14em; text-transform:uppercase; font-style:italic; color:var(--gold); opacity:0.8; margin-bottom:6px; }
+    .meta-card-value { font-family:'Playfair Display',serif; font-size:18px; color:var(--brown); }
+
+    /* ── HINT ── */
+    .reading-hint {
+      margin-top:20px; padding:16px 20px;
+      background:rgba(122,30,30,0.05); border:1px solid rgba(122,30,30,0.14);
+      border-radius:13px; font-size:15px; font-style:italic; color:var(--brown);
+      line-height:1.7; text-align:center;
+    }
+    .reading-hint strong { color:var(--burgundy); font-style:normal; }
+
+    /* ── I CHING BLOCK ── */
+    .iching-block {
+      background:rgba(255,248,235,0.55);
+      border:1px solid rgba(176,125,58,0.22); border-radius:18px; padding:24px; margin-bottom:16px;
+    }
+    .iching-main-row { display:flex; align-items:center; gap:20px; margin-bottom:10px; }
+    .iching-symbol {
+      font-size:56px; line-height:1;
+      color: var(--brown);
+      font-family: serif;
+      min-width: 60px; text-align:center;
+    }
+    .iching-info {}
+    .iching-number { font-size:12px; letter-spacing:0.14em; text-transform:uppercase; font-style:italic; color:var(--gold); opacity:0.8; margin-bottom:4px; }
+    .iching-name { font-family:'Playfair Display',serif; font-size:24px; font-style:italic; color:var(--brown); }
+    .iching-chinese { font-size:15px; color:var(--gold-dk); margin-top:3px; }
+    .iching-meaning { font-size:16px; line-height:1.75; color:var(--umber); margin-top:12px; }
+    .iching-guidance { margin:12px 0 0 0; padding:0; list-style:none; }
+    .iching-guidance li {
+      font-size:15px; line-height:1.65; color:var(--brown);
+      padding:5px 0 5px 22px; position:relative;
+    }
+    .iching-guidance li::before { content:'☯'; position:absolute; left:0; color:var(--gold); font-size:10px; top:8px; }
+
+    /* ── EXPLAINER ── */
+    .explainer { margin-top:20px; }
+    .explainer details { background:rgba(255,248,235,0.55); border:1px solid rgba(176,125,58,0.2); border-radius:15px; padding:16px 20px; }
+    .explainer summary { font-size:15px; }
+    .explainer-body { margin-top:14px; font-size:15px; line-height:1.75; color:var(--brown); }
+    .explainer-body b { color:var(--burgundy); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align:center; padding:28px 10px; color:var(--brown); opacity:0.6; }
+    .empty-state .empty-icon { font-size:36px; margin-bottom:10px; }
+    .empty-state p { font-style:italic; font-size:16px; }
+
+    /* ── FOOTER ── */
+    footer { text-align:center; padding:28px 0 0; font-size:12px; font-style:italic; letter-spacing:0.08em; color:var(--gold); opacity:0.5; }
+    .footer-ornament { margin-bottom:8px; letter-spacing:8px; font-size:16px; }
+
+    /* ── ANIM ── */
+    @keyframes fadeIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .anim-in { animation:fadeIn 0.45s ease both; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Maya Calendar App</h1>
-      <p>Focus mode: zonder het “Wat je ziet”-deel. De uitleg (toon + dag) gebruikt de volledige breedte voor betere leesbaarheid.</p>
 
-      <div class="row" style="margin-top:14px;">
-        <div>
-          <label for="date">Datum</label>
-          <input id="date" type="date" />
-        </div>
-        <div>
-          <label for="corr">Correlatie (JDN basis)</label>
-          <select id="corr">
-            <option value="584283">GMT (584283)</option>
-            <option value="584285">584285</option>
-          </select>
-        </div>
+<div class="stars" id="stars"></div>
+
+<div class="wrap">
+  <header>
+    <div class="header-ornament">
+      <span></span>
+      <div class="star-icon">✦ ✦ ✦</div>
+      <span></span>
+    </div>
+    <h1>Cosmic Calendar</h1>
+    <div class="tagline">Ancient rhythms. Personal guidance. Every day.</div>
+  </header>
+
+  <div class="card">
+    <div class="section-label">Your cosmic date</div>
+
+    <div class="fields">
+      <div class="field-group">
+        <label for="date">Date</label>
+        <input id="date" type="date" />
       </div>
-
-      <div class="row" style="margin-top:10px;">
-        <div>
-          <label>&nbsp;</label>
-          <button id="calc">Bereken</button>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button id="today">Vandaag</button>
-        </div>
+      <div class="field-group">
+        <label for="corr">Correlation</label>
+        <select id="corr">
+          <option value="584283">GMT (584283)</option>
+          <option value="584285">584285</option>
+        </select>
       </div>
+    </div>
 
-      <div class="out" id="out" aria-live="polite">
-        <div class="big">—</div>
-        <div class="hint">Kies een datum en klik <span class="pill">Bereken</span>.</div>
+    <div class="btn-row">
+      <button class="btn-primary" id="calc">☽ Calculate</button>
+      <button class="btn-secondary" id="today">Today</button>
+    </div>
+
+    <div class="result-area" id="out" aria-live="polite">
+      <div class="empty-state">
+        <div class="empty-icon">✦</div>
+        <p>Choose a date and discover<br>your cosmic blueprint</p>
       </div>
+    </div>
 
+    <div class="explainer">
       <details>
-        <summary>Hoe lees je Tzolk’in?</summary>
-        <div class="tone-body">
-          De Tzolk’in combineert twee cycli: een <b>toon</b> (1–13) en een <b>dagnnaam</b> (20).<br>
-          Lees het als: <span class="smallmono">toon = hoe</span> (beweging/ritme) en <span class="smallmono">dagnnaam = wat</span> (thema/kwaliteit).
-          Samen vormt het een dagfocus.
+        <summary>How to read the Tzolk'in?</summary>
+        <div class="explainer-body">
+          The Tzolk'in has two cycles: a <b>tone</b> (1–13) and a <b>day sign</b> (20 names).<br><br>
+          The <b>tone</b> shows <em>how</em> the day moves. The <b>day sign</b> reveals the theme. Together they form your daily focus — a mirror for your own rhythm.
         </div>
       </details>
     </div>
   </div>
 
+  <footer>
+    <div class="footer-ornament">✦</div>
+    Living in the rhythm of time
+  </footer>
+</div>
+
 <script>
 (() => {
+  /* ── DATA: TZOLK'IN ── */
   const TZOLKIN_NAMES = [
-    "Imix","Ik’","Ak’b’al","K’an","Chikchan","Kimi","Manik’","Lamat","Muluk","Ok",
-    "Chuwen","Eb’","B’en","Ix","Men","K’ib’","Kaban","Etz’nab’","Kawak","Ajaw"
+    "Imix","Ik'","Ak'b'al","K'an","Chikchan","Kimi","Manik'","Lamat","Muluk","Ok",
+    "Chuwen","Eb'","B'en","Ix","Men","K'ib'","Kaban","Etz'nab'","Kawak","Ajaw"
   ];
-
   const HAAB_MONTHS = [
-    "Pop","Wo’","Sip","Sotz’","Sek","Xul","Yaxk’in","Mol","Ch’en","Yax",
-    "Sak’","Keh","Mak","K’ank'in","Muwan","Pax","K’ayab","Kumk’u","Wayeb’"
+    "Pop","Wo'","Sip","Sotz'","Sek","Xul","Yaxk'in","Mol","Ch'en","Yax",
+    "Sak'","Keh","Mak","K'ank'in","Muwan","Pax","K'ayab","Kumk'u","Wayeb'"
   ];
 
   const TZOLKIN_TONES = {
-    1:{name:"Magnetisch",short:"Intentie • aantrekking • begin",body:"Toon 1 zet de richting. Het is de vonk die iets zichtbaar maakt: waar gaat je aandacht naartoe en wat wil je uitnodigen? Deze toon helpt je om helder te kiezen en je ‘ja’ te voelen. Als je veel tegelijk wilt, brengt toon 1 je terug naar de kern.",bullets:["Dagfocus: formuleer één duidelijke intentie.","Vraag: Wat wil ik aantrekken — en waarom?","Valkuil: alles openlaten → dan trekt het alle kanten op."]},
-    2:{name:"Lunaire",short:"Dualiteit • uitdaging • balans",body:"Toon 2 laat contrast zien: jij/ander, licht/schaduw, wens/weerstand. Het is geen ‘fout’, maar informatie. Wat wringt, wijst op iets dat om afstemming vraagt. Toon 2 helpt grenzen, keuzes en samenwerking zuiverder te maken.",bullets:["Dagfocus: benoem het spanningsveld zonder het meteen op te lossen.","Vraag: Waar zeg ik ‘ja’ terwijl ik ‘nee’ voel?","Valkuil: polariseren (of/of) i.p.v. integreren (en/en)."]},
-    3:{name:"Elektrisch",short:"Activatie • beweging • eerste actie",body:"Toon 3 brengt je plan in beweging. Klein maar echt: een stap, een contact, een start. Het gaat om het laten stromen van energie door te doen. Actie is hier een katalysator — niet perfectie.",bullets:["Dagfocus: zet één concrete stap binnen 30 minuten.","Vraag: Welke actie maakt dit levend?","Valkuil: wachten op zekerheid vóór je beweegt."]},
-    4:{name:"Zelf-bestaand",short:"Vorm • structuur • definitie",body:"Toon 4 geeft kaders: wat is het precies, wat hoort erbij, wat niet? Het is de toon van plannen, ordenen en afbakenen. Je maakt het ‘bouwbaar’ en daardoor ook deelbaar.",bullets:["Dagfocus: maak een simpele structuur (lijst, stappen, tijdblok).","Vraag: Welke vorm past hierbij?","Valkuil: te strak plannen waardoor ruimte verdwijnt."]},
-    5:{name:"Overtone",short:"Kracht • focus • uitstraling",body:"Toon 5 verzamelt energie en zet het in. Je trekt middelen aan: tijd, hulp, aandacht, vertrouwen. Deze toon werkt als een centrum: waar jij helder bent, volgt de rest gemakkelijker.",bullets:["Dagfocus: kies een focuspunt en bescherm het.","Vraag: Wat geeft dit kracht — en wat lekt energie?","Valkuil: alles zelf willen dragen i.p.v. vragen/delegeren."]},
-    6:{name:"Ritmisch",short:"Balans • organisatie • flow",body:"Toon 6 zoekt het ritme dat werkt. Niet harder, maar slimmer: tempo, herhaling en balans. Je merkt wat ‘klopt’ in je dag: welke gewoontes ondersteunen je en welke verstoren de stroom.",bullets:["Dagfocus: breng je dag in een haalbaar ritme (werk/pauze).","Vraag: Wat brengt stabiliteit zonder te verkrampen?","Valkuil: te veel optimaliseren → de flow verdwijnt."]},
-    7:{name:"Resonant",short:"Afstemming • inspiratie • luisteren",body:"Toon 7 is de middenlijn: je stemt af. Het is een goede dag om te luisteren — naar signalen, synchroniciteit, lichaam en stilte. Inspiratie komt niet door te duwen, maar door te ontvangen.",bullets:["Dagfocus: stilte- of reflectiemoment (5–10 min).","Vraag: Wat wil gehoord worden als ik niets invul?","Valkuil: overprikkeling → afstemming wordt lastig."]},
-    8:{name:"Galactisch",short:"Integriteit • harmonie • voorbeeld",body:"Toon 8 vraagt: leef je wat je weet? Integriteit is de sleutel. Wat je doet, wil kloppen met je waarden. Deze toon ondersteunt herstellen, harmoniseren en rechtzetten wat scheef voelt.",bullets:["Dagfocus: één keuze maken die je waarden weerspiegelt.","Vraag: Waar is er mismatch tussen woorden en daden?","Valkuil: perfectionisme vermomd als integriteit."]},
-    9:{name:"Zonne-energie",short:"Verdieping • volharding • toewijding",body:"Toon 9 vergroot diepte. Je ziet de grotere context en wat volhouden waard is. Het is een goede toon voor afronden, bijslijpen en doorzetten — met geduld en een langere adem.",bullets:["Dagfocus: werk aan iets groots in kleine blokken.","Vraag: Wat verdient mijn toewijding op de lange termijn?","Valkuil: te veel tegelijk → diepte wordt druk."]},
-    10:{name:"Planetair",short:"Manifestatie • zichtbaar worden",body:"Toon 10 maakt het tastbaar: publiceren, laten zien, opleveren. Het gaat om realiteit: wat is er nu daadwerkelijk? Deze toon helpt dingen op aarde te zetten.",bullets:["Dagfocus: lever iets af (al is het een v1).","Vraag: Hoe kan ik dit concreet maken?","Valkuil: blijven schaven → het komt nooit naar buiten."]},
-    11:{name:"Spectraal",short:"Loslaten • bevrijding",body:"Toon 11 ruimt op. Wat vastzit, mag los: oude afspraken, rollen, rommel, overtuigingen of taken die niet meer kloppen. Bevrijding ontstaat door eerlijk weg te halen wat niet meer voedt.",bullets:["Dagfocus: verwijder 1 ding (taak/object/afspraak) dat niet meer past.","Vraag: Wat houdt mij vast zonder reden?","Valkuil: te rigoureus weggooien zonder te voelen wat je wél wilt."]},
-    12:{name:"Kristallijn",short:"Samenwerking • delen • inzicht",body:"Toon 12 verbindt: inzichten worden gedeeld en krijgen betekenis in relatie. Goede toon voor samenwerken, feedback, community en het samenbrengen van losse onderdelen tot één geheel.",bullets:["Dagfocus: deel een inzicht of vraag om feedback.","Vraag: Met wie wordt dit sterker?","Valkuil: iedereen tevreden willen houden i.p.v. helder te zijn."]},
-    13:{name:"Kosmisch",short:"Voltooiing • transcendentie • terugkeer",body:"Toon 13 sluit de cyclus af. Niet alleen klaar, maar ook wijsheid meenemen. Wat heb je geleerd, wat neem je mee naar de volgende ronde? Sterk voor reflectie en afronding met betekenis.",bullets:["Dagfocus: rond iets bewust af (met een klein slot).","Vraag: Wat is de les die ik meeneem?","Valkuil: te snel doorrennen naar het volgende."]}
+    1:{name:"Magnetic",short:"Intention · attraction · beginning",body:"Tone 1 sets the direction. The spark that makes something visible. Where does your attention go? When you want too many things at once, tone 1 brings you back to the core.",bullets:["Formulate one clear intention.","Ask: what do I want to attract — and why?","Leaving everything open pulls in all directions."]},
+    2:{name:"Lunar",short:"Duality · challenge · balance",body:"Tone 2 reveals contrast: self/other, light/shadow, desire/resistance. What chafes points to something asking for alignment. Not a mistake — information.",bullets:["Name the tension — don't resolve it just yet.","Ask: where do I say 'yes' while feeling 'no'?","Either/or thinking misses the and/and."]},
+    3:{name:"Electric",short:"Activation · movement · first step",body:"Tone 3 sets the plan in motion. Small but real: a step, a contact, a start. Energy flows by doing — waiting for certainty works against you here.",bullets:["Take one concrete step within 30 minutes.","Ask: what action makes this alive?","Waiting for the right moment keeps you still."]},
+    4:{name:"Self-Existing",short:"Form · structure · definition",body:"Tone 4 gives shape. What exactly is it? What belongs and what doesn't? The tone of planning, ordering and defining.",bullets:["Build a simple structure: list, steps, time block.","Ask: what form fits this?","Planning too rigidly leaves no room."]},
+    5:{name:"Overtone",short:"Power · focus · radiance",body:"Tone 5 gathers energy and puts it to use. Resources — time, help, trust — come naturally when your direction is clear.",bullets:["Choose a focus point and protect it.","Ask: what gives this power — and what drains it?","Carrying everything alone instead of asking costs more."]},
+    6:{name:"Rhythmic",short:"Balance · organisation · flow",body:"Tone 6 looks for the rhythm that works. You notice what 'fits' in your day: which habits support you and which disrupt the flow.",bullets:["Bring your day into a workable rhythm (work/rest).","Ask: what brings stability without rigidity?","Over-optimising kills the flow."]},
+    7:{name:"Resonant",short:"Attunement · inspiration · listening",body:"Tone 7 is the middle line. Tune in, don't push. Inspiration comes through receiving, not forcing.",bullets:["Plan a moment of silence or reflection (5–10 min).","Ask: what wants to be heard when I stop filling space?","Overstimulation makes attunement impossible."]},
+    8:{name:"Galactic",short:"Integrity · harmony · example",body:"Tone 8 asks: do you live what you know? What you do needs to align with your values. Restore, harmonise, and correct what feels off.",bullets:["Make one choice that reflects your values.","Ask: where is there a gap between words and actions?","Perfectionism disguised as integrity is a trap."]},
+    9:{name:"Solar",short:"Depth · perseverance · dedication",body:"Tone 9 deepens. You see the larger context and what is worth sustaining. Good for finishing, refining and persisting with patience.",bullets:["Work on something big in small blocks.","Ask: what deserves my dedication long-term?","Too much at once turns depth into pressure."]},
+    10:{name:"Planetary",short:"Manifestation · becoming visible",body:"Tone 10 makes it tangible: publish, show, deliver. What is actually here now? Time to put it on the earth.",bullets:["Deliver something — even a first version.","Ask: how do I make this concrete?","Endless refining means it never reaches the world."]},
+    11:{name:"Spectral",short:"Release · liberation",body:"Tone 11 clears. Old agreements, roles, tasks that no longer fit. Liberation by honestly removing what no longer feeds you.",bullets:["Remove one thing (task/object/commitment) that no longer fits.","Ask: what holds me without reason?","Clearing too aggressively — feel what you do want first."]},
+    12:{name:"Crystal",short:"Cooperation · sharing · insight",body:"Tone 12 connects. Insights gain meaning in relation. Good for collaborating, receiving feedback and bringing loose parts together.",bullets:["Share an insight or ask for feedback.","Ask: with whom does this become stronger?","Trying to please everyone instead of being clear doesn't serve."]},
+    13:{name:"Cosmic",short:"Completion · transcendence · return",body:"Tone 13 closes the cycle. What have you learned? What do you carry into the next round? Strong for reflection and meaningful closure.",bullets:["Close something with intention — give it a small ending.","Ask: what is the lesson I carry forward?","Racing on to the next thing skips the gift of completion."]}
   };
 
   const TZOLKIN_DAYS = {
-    "Imix":{title:"Imix",short:"Oerwater • voeding • begin",body:"Imix draagt het ‘oer’ in zich: voeding, ontstaan, intuïtieve impulsen. Het kan creatief en vruchtbaar zijn, maar ook chaotisch als alles tegelijk binnenkomt.",bullets:["Voed jezelf (lichamelijk/mentaal).","Begin klein: zaadje → stap.","Let op ruis/overweldiging; kies één kanaal."]},
-    "Ik’":{title:"Ik’",short:"Wind • adem • woord",body:"Ik’ staat voor adem, communicatie en beweging van geest. Een dag om te spreken, schrijven, afstemmen en ‘lucht’ te brengen waar het vastzit.",bullets:["Zeg het eenvoudig en eerlijk.","Ademwerk helpt richting voelen.","Vermijd praten om te vullen; kies betekenis."]},
-    "Ak’b’al":{title:"Ak’b’al",short:"Nacht • droom • innerlijke ruimte",body:"Ak’b’al gaat over de nachtelijke wereld: dromen, het onzichtbare en innerlijke rust. Een goede dag voor reflectie, herstel en het toelaten van subtiele signalen.",bullets:["Schrijf dromen/gevoelens op.","Zoek stilte i.p.v. antwoorden forceren.","Werk met schaduw: wat wil gezien worden?"]},
-    "K’an":{title:"K’an",short:"Zaad • groei • potentieel",body:"K’an brengt de energie van het zaad: waarde, rijping en potentieel. Het nodigt uit om te kiezen wat je wil laten groeien en om je aandacht te ‘bemesten’.",bullets:["Investeer in wat echt waarde heeft.","Kies 1 groeipunt voor 30 dagen.","Pas op voor hebzucht/‘meer is beter’."]},
-    "Chikchan":{title:"Chikchan",short:"Levenskracht • lichaam • instinct",body:"Chikchan is de slang/levenskracht: sensatie, instinct en lichamelijke waarheid. Ideaal voor embodied keuzes, vitaliteit en het volgen van je ‘ja’ in het lijf.",bullets:["Check-in: wat voelt levend?","Beweeg om spanning te ontladen.","Vermijd impuls zonder aanwezigheid."]},
-    "Kimi":{title:"Kimi",short:"Overgang • loslaten • stilte",body:"Kimi draagt de energie van overgang: afronden, rouwen, transformeren. Niet dramatisch, maar eerlijk: wat is klaar? Wat sterft zodat iets nieuws kan ontstaan?",bullets:["Rond af, schoon op, sluit cirkels.","Gun emoties ruimte zonder verhaal.","Pas op voor cynisme; kies zachtheid."]},
-    "Manik’":{title:"Manik’",short:"Hand • heling • vaardigheid",body:"Manik’ gaat over de hand: doen, maken, helen, ambacht. Een dag om iets praktisch te herstellen of een vaardigheid te oefenen tot het ‘klikt’.",bullets:["Maak iets met je handen.","Breng heling via kleine acties.","Valkuil: ‘fixen’ zonder te luisteren."]},
-    "Lamat":{title:"Lamat",short:"Ster • schoonheid • overvloed",body:"Lamat draait om harmonie, schoonheid en natuurlijke overvloed. Het versterkt wat je aandacht geeft — daarom is intentie extra belangrijk.",bullets:["Voed schoonheid (omgeving, lichaam, kunst).","Focus op wat je wil vergroten.","Valkuil: verstrooiing/pleasen."]},
-    "Muluk":{title:"Muluk",short:"Water • emotie • offer",body:"Muluk is water en emotie: zuivering, stroming, gevoeligheid. Het kan vragen om eerlijk voelen en het laten bewegen van wat lang vastzat.",bullets:["Hydrateer / reinig / laat stromen.","Benoem gevoelens zonder oordeel.","Valkuil: overspoeld raken → ground jezelf."]},
-    "Ok":{title:"Ok",short:"Hond • loyaliteit • hart",body:"Ok brengt trouw, vriendschap en hart-ethiek. Het nodigt uit om relaties te voeden en liefde praktisch te maken — niet alleen als gevoel.",bullets:["Doe één loyale, liefdevolle actie.","Check: waar ben ik trouw aan?","Valkuil: jezelf wegcijferen voor ‘loyaal’ zijn."]},
-    "Chuwen":{title:"Chuwen",short:"Aap • spel • creativiteit",body:"Chuwen is speels en creatief: kunst, humor, experiment. Perfect om te maken, te improviseren en met nieuwsgierigheid te leren.",bullets:["Speel/creëer zonder doel.","Maak een ‘slecht’ eerste ontwerp (v1).","Valkuil: alles als grap → vermijd diepte."]},
-    "Eb’":{title:"Eb’",short:"Pad • gezondheid • ontwikkeling",body:"Eb’ gaat over het pad: dagelijkse groei, welzijn en het leren door stappen. Het is een goede dag voor routines, herstel en richting in je levensweg.",bullets:["Kies een routine die je draagt.","Neem één stap op je pad.","Valkuil: vergelijken → blijf bij je eigen tempo."]},
-    "B’en":{title:"B’en",short:"Riet • integriteit • leiding",body:"B’en staat voor rechtop staan en helder leiden (ook jezelf). Het gaat om waardigheid, grenzen en de moed om koers te houden.",bullets:["Zet één duidelijke grens.","Leid door voorbeeld, niet door druk.","Valkuil: starheid/‘mijn weg of niets’."]},
-    "Ix":{title:"Ix",short:"Jaguar • mysterie • aarde-magie",body:"Ix verbindt met aarde, het mysterie en innerlijke kracht. Een dag voor respect, intuïtie en stille moed. Wat je in het geheim voedt, groeit hier sterk.",bullets:["Ga de natuur in of ground bewust.","Werk met intuïtie/ritueel.","Valkuil: controle willen over het onbekende."]},
-    "Men":{title:"Men",short:"Adelaar • visie • overzicht",body:"Men geeft hoogte en visie: het grotere plaatje, strategie, toekomst. Goed voor plannen met overzicht en het kiezen van een richting die klopt.",bullets:["Zoom uit: wat is de kern?","Maak 1 strategische keuze.","Valkuil: te veel in je hoofd → vergeet het hart."]},
-    "K’ib’":{title:"K’ib’",short:"Innerlijk vuur • reflectie • vergeving",body:"K’ib’ gaat over innerlijke reflectie, geweten en vergeving. Een dag om te helen door te begrijpen, te verlichten en eerlijk terug te kijken.",bullets:["Schrijf: wat wil ik vergeven (mij/ander)?","Kies eenvoud en stilte.","Valkuil: blijven hangen in schuld/zelfkritiek."]},
-    "Kaban":{title:"Kaban",short:"Aarde • synchroniciteit • evolutie",body:"Kaban is de aarde in beweging: groei, verandering en timing. Het helpt je te voelen wat ‘nu’ klopt, en om mee te bewegen met tekenen en ritme.",bullets:["Let op synchroniciteiten (maar blijf nuchter).","Maak een keuze die evolutie ondersteunt.","Valkuil: onrust → aarden, dan bewegen."]},
-    "Etz’nab’":{title:"Etz’nab’",short:"Vuursteen • spiegel • waarheid",body:"Etz’nab’ is de spiegel en de scherpe rand van waarheid. Het snijdt door illusie heen. Goede dag voor eerlijkheid, feedback en helder beslissen.",bullets:["Vraag: wat is de simpele waarheid?","Kies helder communiceren.","Valkuil: scherpte zonder compassie."]},
-    "Kawak":{title:"Kawak",short:"Storm • reiniging • doorbraak",body:"Kawak brengt stormenergie: opschonen, ontladen en doorbraken. Het kan intens voelen, maar werkt vaak als reset naar meer authenticiteit.",bullets:["Laat spanning los (bewegen, opruimen, huilen).","Maak ruimte voor een doorbraak.","Valkuil: drama voeden i.p.v. zuiveren."]},
-    "Ajaw":{title:"Ajaw",short:"Zon • bewustzijn • voltooiing",body:"Ajaw staat voor licht, bewustzijn en afronding. Het is een dag om te verlichten: wat is essentieel, wat mag gezien worden, wat rond je waardig af?",bullets:["Kies één essentie en maak het helder.","Vier wat af is; erken groei.","Valkuil: ego i.p.v. licht delen."]}
+    "Imix":{title:"Imix",short:"Primal water · nourishment · beginning",body:"Imix carries the primal beginning: nourishment, emergence, intuitive impulses. Creative and fertile — but also chaotic when everything rushes in at once.",bullets:["Nourish yourself — body and mind.","Start small: seed, then step.","Watch for overwhelm; choose one channel."]},
+    "Ik'":{title:"Ik'",short:"Wind · breath · word",body:"Ik' stands for breath, communication and the movement of spirit. A day for speaking, writing and bringing air where things feel stuck.",bullets:["Say it simply and honestly.","Breath work helps you find direction.","Talking to fill space works against you; choose meaning."]},
+    "Ak'b'al":{title:"Ak'b'al",short:"Night · dream · inner space",body:"Ak'b'al belongs to the night world: dreams, the invisible and inner rest. Good for reflection and allowing subtle signals in.",bullets:["Write down dreams or feelings.","Seek stillness — answers don't need to be forced.","What wants to be seen?"]},
+    "K'an":{title:"K'an",short:"Seed · growth · potential",body:"K'an carries the energy of the seed: value, ripening and potential. Choose what you want to grow and direct your attention with purpose.",bullets:["Invest in what truly has value.","Choose one growth point for 30 days.","More-is-better thinking scatters the seed."]},
+    "Chikchan":{title:"Chikchan",short:"Life force · body · instinct",body:"Chikchan is the serpent and life force: sensation, instinct and bodily truth. Ideal for choices you feel in your body.",bullets:["Check in: what feels alive?","Move to release tension.","Impulse without presence doesn't land."]},
+    "Kimi":{title:"Kimi",short:"Transition · release · stillness",body:"Kimi carries the energy of transition: completing, grieving, transforming. Honest seeing: what is done? What ends so something new can arise?",bullets:["Complete, clear, close circles.","Give emotions space — without adding a story.","Cynicism works against you; choose softness."]},
+    "Manik'":{title:"Manik'",short:"Hand · healing · skill",body:"Manik' is about the hand: doing, making, healing, craft. A day to restore something practical or practise a skill until it clicks.",bullets:["Make something with your hands.","Bring healing through small actions.","Fixing without listening misses the point."]},
+    "Lamat":{title:"Lamat",short:"Star · beauty · abundance",body:"Lamat revolves around harmony, beauty and abundance. Intention matters especially — it amplifies whatever you give attention to.",bullets:["Cultivate beauty: surroundings, body, art.","Focus on what you want to grow.","Distraction or people-pleasing costs energy."]},
+    "Muluk":{title:"Muluk",short:"Water · emotion · offering",body:"Muluk is water and emotion: purification, flow, sensitivity. Good for honest feeling and allowing what has long been stuck to move.",bullets:["Hydrate, cleanse, let flow.","Name feelings without judgement.","Feeling overwhelmed: ground yourself first."]},
+    "Ok":{title:"Ok",short:"Dog · loyalty · heart",body:"Ok brings faithfulness, friendship and heart-ethics. Nourishing relationships and making love practical — not just felt.",bullets:["Do one loyal, loving act.","Check: what am I truly loyal to?","Erasing yourself is not loyalty."]},
+    "Chuwen":{title:"Chuwen",short:"Monkey · play · creativity",body:"Chuwen is playful and creative: art, humour, experiment. Making, improvising and learning with curiosity.",bullets:["Play or create without a goal.","Make a rough first version.","Treating everything as a joke avoids depth."]},
+    "Eb'":{title:"Eb'",short:"Path · wellbeing · development",body:"Eb' is about the path: daily growth, wellbeing and learning through steps. Good for routines, recovery and direction on your life's road.",bullets:["Choose a routine that sustains you.","Take one step on your path.","Your own pace — comparing doesn't help."]},
+    "B'en":{title:"B'en",short:"Reed · integrity · leadership",body:"B'en means standing upright and leading clearly — yourself included. Dignity, boundaries and the courage to hold course.",bullets:["Set one clear boundary.","Lead by example, not pressure.","Rigidity works against you."]},
+    "Ix":{title:"Ix",short:"Jaguar · mystery · earth magic",body:"Ix connects with earth, mystery and inner strength. Respect, intuition and quiet courage.",bullets:["Go into nature or ground consciously.","Work with intuition and ritual.","Wanting control over the unknown doesn't work here."]},
+    "Men":{title:"Men",short:"Eagle · vision · overview",body:"Men gives height and vision: the bigger picture, strategy, future. Planning with perspective and choosing a course.",bullets:["Zoom out: what is the essence?","Make one strategic choice.","Too much in your head: don't forget the heart."]},
+    "K'ib'":{title:"K'ib'",short:"Inner fire · reflection · forgiveness",body:"K'ib' is about inner reflection, conscience and forgiveness. Healing through understanding and honest looking back.",bullets:["Write: what do I want to forgive — myself or another?","Choose simplicity and stillness.","Staying stuck in guilt doesn't help."]},
+    "Kaban":{title:"Kaban",short:"Earth · synchronicity · evolution",body:"Kaban is the earth in motion: growth, change and timing. Feeling what 'fits now' and moving with signs and rhythm.",bullets:["Notice synchronicities — stay grounded.","Make a choice that supports growth.","Restless: earth first, then move."]},
+    "Etz'nab'":{title:"Etz'nab'",short:"Flint · mirror · truth",body:"Etz'nab' is the mirror and the sharp edge of truth. Cutting through illusion. Good for honesty and clear deciding.",bullets:["Ask: what is the simple truth?","Choose clear communication.","Sharpness without compassion misses its mark."]},
+    "Kawak":{title:"Kawak",short:"Storm · cleansing · breakthrough",body:"Kawak brings storm energy: clearing, releasing and breakthroughs. Intense, but often a reset toward greater authenticity.",bullets:["Release tension: move, clear, cry.","Make space for a breakthrough.","Feeding drama instead of purifying costs energy."]},
+    "Ajaw":{title:"Ajaw",short:"Sun · consciousness · completion",body:"Ajaw stands for light, consciousness and closure. Illuminate: what is essential, what may be seen, what do you close with grace?",bullets:["Choose one essence and make it clear.","Celebrate what is done; acknowledge the growth.","Showing ego instead of sharing light doesn't serve."]}
   };
 
-  const pad2 = n => String(n).padStart(2, "0");
-  const elDate = document.getElementById("date");
-  const elCorr = document.getElementById("corr");
-  const elOut  = document.getElementById("out");
-  const btnCalc = document.getElementById("calc");
-  const btnToday = document.getElementById("today");
+  /* ── MOON PHASE DATA ── */
+  const MOON_PHASES = [
+    { name:"New Moon",           pct:[0,   1.5]  },
+    { name:"Waxing Crescent",    pct:[1.5, 25]   },
+    { name:"First Quarter",      pct:[25,  26]   },
+    { name:"Waxing Gibbous",     pct:[26,  49]   },
+    { name:"Full Moon",          pct:[49,  51]   },
+    { name:"Waning Gibbous",     pct:[51,  74]   },
+    { name:"Last Quarter",       pct:[74,  75]   },
+    { name:"Waning Crescent",    pct:[75,  99]   }
+  ];
 
-  function gregorianToJDN(y, m, d) {
-    const a = Math.floor((14 - m) / 12);
-    const y2 = y + 4800 - a;
-    const m2 = m + 12 * a - 3;
-    return d + Math.floor((153 * m2 + 2) / 5) + 365 * y2 + Math.floor(y2 / 4)
-      - Math.floor(y2 / 100) + Math.floor(y2 / 400) - 32045;
+  // SVG moon tekening: zwart/grijs/wit op basis van verlichtingspercentage
+  function moonSVG(illumination, cyclePos, synodicMonth) {
+    const r = 36;
+    const cx = 44, cy = 44;
+    const size = 88;
+    // Is het wassend (0-14.7 dagen) of afnemend (14.7-29.5)?
+    const waxing = cyclePos < synodicMonth / 2;
+    // De sikkelvorm: gebruik een ellips voor de terminator
+    // illumination 0=nieuw, 50=kwartier, 100=vol
+    const pct = illumination / 100;
+    // Bereken breedte van de verlichte kant als ellips-x-radius
+    // Volledig verlicht: de verlichte helft is een halve cirkel
+    // De terminator is een ellips met x-radius die varieert van -r (nieuw) via 0 (kwartier) tot r (vol)
+    const terminatorX = r * Math.cos(Math.PI * pct); // r→0→-r voor wassend
+    const lit = waxing ? (1 - pct) : pct; // hoe "smal" de donkere kant is
+    const termX = r - 2 * r * pct; // positief=rechts donker, negatief=links donker
+
+    // Bouw SVG path voor verlichte gebied
+    // Verlichte halve cirkel + terminator ellips
+    let path;
+    if (illumination <= 2) {
+      // Nieuwe maan: volledig donker
+      path = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1a1a1a"/>`;
+    } else if (illumination >= 98) {
+      // Volle maan: volledig wit
+      path = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#e8e8e8"/>`;
+    } else {
+      // Donkere achtergrond cirkel
+      const bg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1a1a1a"/>`;
+      // Verlichte zijde: altijd een halve cirkel (links of rechts)
+      // + terminator ellips die de grens vormt
+      const tx = r * (1 - 2 * pct); // -r..+r
+      // Verlichte halve cirkel
+      const litSide = waxing ? 'right' : 'left';
+      // Voor wassende maan: rechterhelft verlicht, terminator links van het midden
+      // Voor afnemende maan: linkerhelft verlicht, terminator rechts van het midden
+      const sweep = waxing ? 0 : 1; // arc sweep richting voor de ellips
+      const ellipseSweep = waxing ? 1 : 0;
+      const halfCircleSweep = waxing ? 0 : 1;
+
+      // Pad: van top langs terminator-ellips naar onder, dan langs buitencirkel terug
+      // Terminator: ellips met x-radius=|tx|, y-radius=r
+      const atx = Math.abs(tx);
+      // Top punt: (cx, cy-r), Bottom punt: (cx, cy+r)
+      // Verlichte boog (buitenkant cirkel): van top naar bottom langs de verlichte kant
+      // Terminator (ellips): van bottom naar top langs de terminator
+      const circleArcFlag = waxing ? 0 : 1; // welke kant van de cirkel
+
+      const litPath = `M ${cx} ${cy - r}
+        A ${r} ${r} 0 0 ${circleArcFlag} ${cx} ${cy + r}
+        A ${atx} ${r} 0 0 ${ellipseSweep} ${cx} ${cy - r} Z`;
+
+      path = bg + `<path d="${litPath}" fill="#e0e0e0"/>`;
+      // Dunne rand
+    }
+
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+      <circle cx="${cx}" cy="${cy}" r="${r+1}" fill="none" stroke="#888" stroke-width="0.5" opacity="0.4"/>
+      ${path}
+    </svg>`;
   }
 
-  function longCountFromDays(days) {
-    const BAKTUN = 144000, KATUN = 7200, TUN = 360, UINAL = 20;
-    const baktun = Math.floor(days / BAKTUN); days %= BAKTUN;
-    const katun  = Math.floor(days / KATUN);  days %= KATUN;
-    const tun    = Math.floor(days / TUN);    days %= TUN;
-    const uinal  = Math.floor(days / UINAL);  days %= UINAL;
-    const kin    = days;
-    return { baktun, katun, tun, uinal, kin };
+  function getMoonData(date) {
+    const baseNewMoon = new Date('2000-01-06T18:14:00Z');
+    const synodicMonth = 29.53058867;
+    const diffDays = (date - baseNewMoon) / 86400000;
+    const cyclePos = ((diffDays % synodicMonth) + synodicMonth) % synodicMonth;
+    const illumination = Math.round(50 * (1 - Math.cos(2 * Math.PI * cyclePos / synodicMonth)));
+
+    let phase = MOON_PHASES[1];
+    for (const p of MOON_PHASES) {
+      if (illumination >= p.pct[0] && illumination < p.pct[1]) { phase = p; break; }
+    }
+    if (illumination >= 99) phase = MOON_PHASES[0];
+
+    const daysUntilFull = ((synodicMonth/2) - cyclePos + synodicMonth) % synodicMonth;
+    const daysUntilNew  = (synodicMonth - cyclePos) % synodicMonth;
+
+    let nextPhaseName, daysUntilNext;
+    if (cyclePos < synodicMonth / 2) {
+      nextPhaseName = "Full Moon"; daysUntilNext = Math.round(daysUntilFull);
+    } else {
+      nextPhaseName = "New Moon"; daysUntilNext = Math.round(daysUntilNew);
+    }
+
+    return { phase, illumination, nextPhaseName, daysUntilNext, cyclePos, synodicMonth };
   }
 
-  function tzolkinFromDays(days) {
-    const number = ((days + 3) % 13) + 1;
-    const name = TZOLKIN_NAMES[(days + 19) % 20];
-    return { number, name };
+  /* ── CELTIC CALENDAR ── */
+  const CELTIC_EVENTS = [
+    { name:"Samhain",    keywords:"beginning · dark half-year · ancestors",  mmdd:"11-01" },
+    { name:"Yule",       keywords:"winter solstice · return of the light",    mmdd:"12-21" },
+    { name:"Imbolc",     keywords:"first light · growth · inspiration",       mmdd:"02-01" },
+    { name:"Ostara",     keywords:"spring equinox · balance · new beginning", mmdd:"03-21" },
+    { name:"Beltane",    keywords:"fire · life · connection",                 mmdd:"05-01" },
+    { name:"Litha",      keywords:"summer solstice · peak · power",           mmdd:"06-21" },
+    { name:"Lughnasadh", keywords:"first harvest · gratitude · ripening",     mmdd:"08-01" },
+    { name:"Mabon",      keywords:"autumn equinox · balance · harvest",       mmdd:"09-21" }
+  ];
+
+  function getCelticData(date) {
+    const year  = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day   = date.getDate();
+    const mmdd  = `${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+    // Build event dates for this year + next year for wraparound
+    function eventDate(ev, y) {
+      const [m, d] = ev.mmdd.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    // Find current season (last event that has passed)
+    let current = CELTIC_EVENTS[0];
+    for (const ev of CELTIC_EVENTS) {
+      if (eventDate(ev, year) <= date) current = ev;
+    }
+
+    // Find next event
+    let next = null;
+    let daysUntil = 999;
+    for (const ev of CELTIC_EVENTS) {
+      let ed = eventDate(ev, year);
+      if (ed <= date) ed = eventDate(ev, year + 1);
+      const diff = Math.round((ed - date) / 86400000);
+      if (diff > 0 && diff < daysUntil) { daysUntil = diff; next = ev; }
+    }
+    // Also check same events next year
+    for (const ev of CELTIC_EVENTS) {
+      const ed = eventDate(ev, year + 1);
+      const diff = Math.round((ed - date) / 86400000);
+      if (diff > 0 && diff < daysUntil) { daysUntil = diff; next = ev; }
+    }
+
+    return { current, next, daysUntil };
   }
 
-  function haabFromDays(days) {
-    const haabIndex = (days + 348) % 365;
-    if (haabIndex >= 360) return { day: haabIndex - 360, month: "Wayeb’" };
-    const monthIndex = Math.floor(haabIndex / 20);
-    return { day: haabIndex % 20, month: HAAB_MONTHS[monthIndex] };
+  /* ── I CHING DATA ── */
+  const HEXAGRAMS = [
+    {n:1,  zh:"乾", name:"Qian",     nl:"The Creative",           tri:"☰☰", key:"Heaven · strength · perseverance",   body:"Pure creative force is active. What you begin has ground beneath it. Stay true to your direction without forcing.",  guidance:["Commit to what you truly want to create.","Leadership asks for firmness, not rigidity.","Strength without softness becomes brittleness."]},
+    {n:2,  zh:"坤", name:"Kun",      nl:"The Receptive",          tri:"☷☷", key:"Earth · receiving · nourishing",     body:"Receptivity is today's strength. Don't push — create space. The earth carries everything without struggle.",        guidance:["Listen more than you speak.","Let things ripen without intervening.","Nourishing is also an act of power."]},
+    {n:3,  zh:"屯", name:"Zhun",     nl:"Difficult Beginning",    tri:"☵☳", key:"Sprouting · persisting · patience",  body:"First steps are hard, but the seed is alive. Difficulty at the start belongs — it doesn't have to stop you.",       guidance:["Small steps count.","Seek help; you don't have to carry this alone.","Give it the time it asks for."]},
+    {n:4,  zh:"蒙", name:"Meng",     nl:"Youthful Folly",         tri:"☶☵", key:"Learning · beginner's mind · honesty",body:"Not knowing is a good place to start. The master doesn't ask; the student asks. Be the student today.",            guidance:["Ask the question you've been putting off.","Don't pretend to already know.","Honesty about your limits opens doors."]},
+    {n:5,  zh:"需", name:"Xu",       nl:"Waiting",                tri:"☰☵", key:"Patience · trust · timing",          body:"The time has not yet come. Waiting is not passivity — it is trust in the right moment. Nourish yourself meanwhile.",  guidance:["Force nothing today.","Use the waiting time to build strength.","Trust is an active choice."]},
+    {n:6,  zh:"訟", name:"Song",     nl:"Conflict",               tri:"☵☰", key:"Tension · withdrawal · clear seeing", body:"There is tension. Don't go further into the fight. Withdrawing is sometimes the wisest move. Look at your own part.",guidance:["Resolve it as early as possible — don't let it escalate.","Seek a neutral outside perspective.","What you defend defines who you are."]},
+    {n:7,  zh:"師", name:"Shi",      nl:"The Army",               tri:"☷☵", key:"Discipline · leadership · purpose",   body:"Strength needs direction. Organise your resources. A good leader knows when to act and when to wait.",               guidance:["Bring order to your approach.","Leading others starts with leading yourself.","Purpose and discipline walk together."]},
+    {n:8,  zh:"比", name:"Bi",       nl:"Holding Together",       tri:"☵☷", key:"Connection · cooperation · alignment", body:"Today calls for connection. Seek people who share the same direction. Cooperation is stronger than standing alone.",  guidance:["Reach out — don't wait.","Check: who shares my course?","Close bonds require honesty."]},
+    {n:9,  zh:"小畜", name:"Xiao Xu",nl:"Small Taming",           tri:"☰☴", key:"Small steps · patience · fine-tuning",body:"Big changes through small adjustments. Not everything at once. Refine, align, wait for the right moment.",          guidance:["Focus on one detail that makes the difference.","Small corrections are major maintenance.","Don't force — it's still ripening."]},
+    {n:10, zh:"履", name:"Lü",       nl:"Treading Carefully",     tri:"☴☰", key:"Care · respect · courage",            body:"Walk carefully, even when the situation feels dangerous. Calm and respect are your protection today.",               guidance:["Weigh your words and steps.","Respect for others opens paths.","Courage and caution are not opposites."]},
+    {n:11, zh:"泰", name:"Tai",      nl:"Peace",                  tri:"☷☰", key:"Harmony · connection · flourishing",  body:"Heaven and earth unite. A good time for growth and cooperation. Bring together what was separate.",                  guidance:["This is a moment to give and receive.","Connection strengthens everything now.","Celebrate small wins — they carry larger ones."]},
+    {n:12, zh:"否", name:"Pi",       nl:"Standstill",             tri:"☰☷", key:"Withdrawal · waiting · preserving",   body:"Energy withdraws. Don't join the surface noise. Preserve your strength for what truly matters.",                     guidance:["Withdrawing is sometimes the strongest move.","Wait for a more open moment.","Keep what you have; not everything needs to happen now."]},
+    {n:13, zh:"同人", name:"Tong Ren",nl:"Fellowship",            tri:"☰☲", key:"Connection · openness · community",   body:"Connection with others from sincerity. Seek kindred spirits. Together is more than the sum of the parts.",           guidance:["Be open about your intentions.","Community asks for honesty, not a mask.","Reach beyond your usual circle."]},
+    {n:14, zh:"大有", name:"Da You", nl:"Great Possession",       tri:"☲☰", key:"Abundance · responsibility · sharing",body:"Much is present — material, creative or social. Abundance asks for wisdom: use it well and share it.",               guidance:["What you have, you also carry.","Share from strength, not from guilt.","Abundance comes with responsibility."]},
+    {n:15, zh:"謙", name:"Qian",     nl:"Modesty",                tri:"☷☶", key:"Simplicity · emptiness · quiet power",body:"The modest person draws strength. Today restraint works better than self-promotion. Let your work speak.",            guidance:["Do less, mean more.","Simplicity is a choice, not a lack.","Listen more than you tell."]},
+    {n:16, zh:"豫", name:"Yu",       nl:"Enthusiasm",             tri:"☳☷", key:"Movement · joy · inspiration",        body:"Energy and joy are present. Let your enthusiasm carry others. Music, movement and rhythm help today.",                guidance:["Share your joy — it's contagious.","Act from inspiration, not just reason.","Rhythm and flow are your allies."]},
+    {n:17, zh:"隨", name:"Sui",      nl:"Following",              tri:"☱☳", key:"Adapting · following · flexibility",  body:"Sometimes you lead, sometimes you follow. Today: follow the current without losing yourself. Adapting is not weakness.",guidance:["See who or what is setting direction now.","Going along differs from drifting along.","Adapt without losing who you are."]},
+    {n:18, zh:"蠱", name:"Gu",       nl:"Repair",                 tri:"☶☴", key:"Correcting · clearing · renewing",   body:"Something has been neglected or spoiled. Today there is strength to repair. Begin with honest looking.",                guidance:["Name what has long been simmering.","Repair starts with acknowledging, not denying.","After clearing comes a new beginning."]},
+    {n:19, zh:"臨", name:"Lin",      nl:"Approach",               tri:"☷☱", key:"Growing · nearing · opportunities",  body:"Something good approaches — a chance, a connection, a breakthrough. Be present and open. Welcome what comes.",         guidance:["Stay open to what is knocking.","Preparation makes you receptive.","This moment asks for presence."]},
+    {n:20, zh:"觀", name:"Guan",     nl:"Contemplation",          tri:"☴☷", key:"Observation · perceiving · perspective",body:"Step back and look. Observe without judgement. Insight comes from standing still, not working harder.",           guidance:["Take distance from the noise.","What do you see when you stop filling things in?","Observing is a skill — practise it."]},
+    {n:21, zh:"噬嗑", name:"Shi Ke", nl:"Biting Through",         tri:"☲☳", key:"Persisting · obstacles · deciding",  body:"There is an obstacle that must be bitten through. Delay doesn't help. Clear, resolute action brings you through.",    guidance:["Deal with what you've been putting off.","Sharpness and honesty are your tools now.","Persisting requires decision, not force."]},
+    {n:22, zh:"賁", name:"Bi",       nl:"Grace",                  tri:"☶☲", key:"Beauty · form · refinement",         body:"Attention to form and beauty. Today presentation matters — but don't forget the substance.",                          guidance:["Care for the outside without losing the core.","Beauty in small details makes the whole.","What you show speaks before you do."]},
+    {n:23, zh:"剝", name:"Bo",       nl:"Splitting Apart",        tri:"☶☷", key:"Releasing · decay · return",         body:"What no longer serves is falling away. Don't resist — this makes room. Keep the core, let the shell go.",             guidance:["What do you leave behind today?","Decay is also preparation.","Hold on to what is essential."]},
+    {n:24, zh:"復", name:"Fu",       nl:"Return",                 tri:"☷☳", key:"Recovery · new beginning · cycle",   body:"After the night, light returns. A cycle begins again. Small signs of recovery are already there — see them.",         guidance:["Trust the return of energy.","Begin small; the strength builds.","This is a moment of new beginning."]},
+    {n:25, zh:"無妄", name:"Wu Wang",nl:"Innocence",              tri:"☰☳", key:"Sincerity · spontaneous · free",      body:"Acting from sincerity brings success. Calculate nothing today — simply be honest and present.",                       guidance:["Do what feels right, not what seems clever.","Sincerity draws good things.","Calculation disrupts the flow."]},
+    {n:26, zh:"大畜", name:"Da Xu",  nl:"Great Taming",           tri:"☶☰", key:"Storing power · timing · potential",  body:"Much strength is present, but not yet time to release it. Store and build. The moment comes on its own.",            guidance:["Invest in preparation.","Preserving strength is also an act.","The right moment is not far away."]},
+    {n:27, zh:"頤", name:"Yi",       nl:"Nourishment",            tri:"☶☳", key:"Nourishing · caring · awareness",    body:"What do you feed — your body, your mind, your relationships? Today is the moment to consciously choose what you let in.",guidance:["Choose consciously what you eat, read, hear.","What you feed grows.","Caring for others starts with nourishing yourself."]},
+    {n:28, zh:"大過", name:"Da Guo", nl:"Preponderance",          tri:"☱☴", key:"Pressure · bending · breakthrough",  body:"The beam bends but has not yet broken. There is too much pressure. Find a way out before it is too late.",            guidance:["Release the pressure — small or large.","Ask for help; carrying this alone is too heavy now.","A creative way out beats pushing through."]},
+    {n:29, zh:"坎", name:"Kan",      nl:"The Abysmal",            tri:"☵☵", key:"Danger · persisting · trust",        body:"You are in deep water. Keep moving, don't panic. Water always finds its way downward.",                               guidance:["Move through, not around it.","Trust your own capacity.","In danger: stay calm, clear, and steady."]},
+    {n:30, zh:"離", name:"Li",       nl:"The Clinging",           tri:"☲☲", key:"Clarity · clinging · awareness",     body:"Fire illuminates but also burns. There is clarity today. Use the light to see — and to illuminate others.",            guidance:["Be clear in what you say and do.","Dependency and connection are not the same.","Illuminate without burning."]},
+    {n:31, zh:"咸", name:"Xian",     nl:"Mutual Influence",       tri:"☱☶", key:"Attraction · sensitivity · connection",body:"There is mutual attraction. Be sensitive to what moves between you and the other.",                                 guidance:["Listen to subtle signals.","Attraction asks for openness, not strategy.","What do you actually feel in this contact?"]},
+    {n:32, zh:"恆", name:"Heng",     nl:"Duration",               tri:"☳☴", key:"Steadfastness · rhythm · loyalty",   body:"What is lasting asks for consistency. Today: stay loyal to your direction, even when there is little spectacle.",      guidance:["Keep your rhythm.","Small daily actions build the large.","Loyalty to yourself is the foundation."]},
+    {n:33, zh:"遯", name:"Dun",      nl:"Retreat",                tri:"☰☶", key:"Retreating · preserving · choosing the moment",body:"Wise retreat is not flight. Preserve your strength for a moment when you truly have influence.",            guidance:["Don't fight what is stronger.","Distance gives clarity.","Return is possible — preserve your strength."]},
+    {n:34, zh:"大壯", name:"Da Zhuang",nl:"Great Power",          tri:"☳☰", key:"Power · firmness · direction",       body:"Great power is available. But power without direction destroys. Use it with an awareness of responsibility.",          guidance:["Strong and gentle at once — that is real power.","What do you put your strength toward?","Lead, don't force."]},
+    {n:35, zh:"晉", name:"Jin",      nl:"Progress",               tri:"☲☷", key:"Growth · recognition · forward",     body:"Progress is possible — and visible. A good moment to present, to grow and to receive recognition.",                  guidance:["Step forward, even if it feels scary.","Recognition comes for those who show themselves.","Growth asks that you make it visible."]},
+    {n:36, zh:"明夷", name:"Ming Yi",nl:"Darkening of the Light", tri:"☷☲", key:"Protecting · preserving inner light", body:"The light withdraws or is suppressed. Preserve your inner clarity. Not everything needs to be visible.",              guidance:["Protect your energy and intentions.","Inner clarity outlasts any darkness.","This is not the moment for big moves."]},
+    {n:37, zh:"家人", name:"Jia Ren",nl:"The Family",             tri:"☴☲", key:"Home · roles · care",                body:"Attention for the inner circle: home, family, close relationships. Who do you care for, and who cares for you?",       guidance:["Start with yourself, then your closest circle.","Clarity about roles lowers tension.","Home is a state of being, not only a place."]},
+    {n:38, zh:"睽", name:"Kui",      nl:"Opposition",             tri:"☲☱", key:"Difference · tension · bridge building",body:"Opposites are visible. Don't seek unity by denying difference — build a bridge over it.",                          guidance:["Accept the difference before building a bridge.","Difference holds information.","A small shared ground is enough for connection."]},
+    {n:39, zh:"蹇", name:"Jian",     nl:"Obstruction",            tri:"☵☶", key:"Blockage · detour · patience",       body:"The direct path is blocked. Find a detour or wait. Forcing costs more than it yields.",                               guidance:["Which detour still moves you forward?","Sometimes waiting is the fastest route.","See where the blockage comes from."]},
+    {n:40, zh:"解", name:"Jie",      nl:"Liberation",             tri:"☳☵", key:"Relief · releasing · movement",      body:"The tension releases. After the storm comes movement. Let go of what is done; move quickly now the way is open.",    guidance:["Use this opening — don't hesitate.","Clear up what the storm left behind.","Liberation asks for action, not just feeling."]},
+    {n:41, zh:"損", name:"Sun",      nl:"Decrease",               tri:"☶☱", key:"Less is more · offering · simplifying",body:"Reducing the surplus strengthens the essence. What can you release to deepen?",                                    guidance:["Simplify where you can.","What you give away makes space.","Having less can mean more freedom."]},
+    {n:42, zh:"益", name:"Yi",       nl:"Increase",               tri:"☴☳", key:"Growth · giving · seizing chances",  body:"A favourable time for growth and giving. What you give returns multiplied. Act from abundance.",                      guidance:["Give generously — the moment is here for it.","Seize opportunities quickly; they are temporary.","Growth and giving go together."]},
+    {n:43, zh:"夬", name:"Guai",     nl:"Breakthrough",           tri:"☱☰", key:"Deciding · breaking through · honesty",body:"A breakthrough is near but asks for clarity and honesty. Say what needs to be said. Break through with gentleness.", guidance:["Speak the truth — even when uncomfortable.","Breaking through asks for decision, not violence.","Be clear about your intention."]},
+    {n:44, zh:"姤", name:"Gou",      nl:"Coming to Meet",         tri:"☰☴", key:"Encounter · temptation · watchfulness",body:"An unexpected encounter or influence. Stay alert: not every attraction leads somewhere good.",                        guidance:["What draws you — and why?","Temptation asks for awareness, not judgement.","Choose consciously with whom you share your energy."]},
+    {n:45, zh:"萃", name:"Cui",      nl:"Gathering Together",     tri:"☱☷", key:"Assembly · connecting · directing",   body:"People and things come together. Use this gathering of strength. Giving direction to the group matters now.",         guidance:["Bring people together with a clear purpose.","Leadership means giving direction.","Bundled energy works stronger."]},
+    {n:46, zh:"升", name:"Sheng",    nl:"Pushing Upward",         tri:"☷☴", key:"Rising · persisting · growing",      body:"Steady ascent is possible. Like a plant growing upward: slowly, surely, without haste. Persevere and rise.",           guidance:["Rising happens step by step.","Trust in the process is the key here.","Perseverance now leads to height later."]},
+    {n:47, zh:"困", name:"Kun",      nl:"Exhaustion",             tri:"☱☵", key:"Depletion · preserving · return",    body:"Resources or energy are exhausted. This is not a moment for big action. Rest, recover and preserve what you have.",    guidance:["Rest is not loss — it is recovery.","Ask for help when your strength is gone.","After exhaustion, return always comes."]},
+    {n:48, zh:"井", name:"Jing",     nl:"The Well",               tri:"☵☴", key:"Source · nourishing · return to essence",body:"The well as source of living water. Return to the source: what truly nourishes you? Reconnect with it.",          guidance:["Return to what feeds you.","Keep the source from running dry.","Everyone draws from the same deep source."]},
+    {n:49, zh:"革", name:"Ge",       nl:"Revolution",             tri:"☱☲", key:"Change · transformation · renewing", body:"Radical change is possible and needed. Not to destroy but to renew. The time is ripe.",                               guidance:["Change that is ripe does not resist.","Transform from within, not under outside pressure.","What is being born anew?"]},
+    {n:50, zh:"鼎", name:"Ding",     nl:"The Cauldron",           tri:"☲☴", key:"Transformation · culture · ripening",body:"The cauldron turns raw food into nourishment. Transform raw material into something valuable. Culture and care are central.",guidance:["Bring your talents together into something useful.","Care for what you prepare — it feeds others.","Ripening takes time; haste disrupts."]},
+    {n:51, zh:"震", name:"Zhen",     nl:"The Arousing",           tri:"☳☳", key:"Shock · awakening · recovering",     body:"Shock awakens. A sudden event makes you see what truly matters. After the shock: calm.",                               guidance:["Let the shock land before you act.","What was reset by this moment?","After every thunder comes stillness."]},
+    {n:52, zh:"艮", name:"Gen",      nl:"Keeping Still",          tri:"☶☶", key:"Standing still · meditating · grounding",body:"Don't move. Stand still and be present. Stillness is not failure; it is conscious presence in this moment.",       guidance:["Sit. Breathe. Let go.","What do you see when you stop moving?","Ground yourself before moving on."]},
+    {n:53, zh:"漸", name:"Jian",     nl:"Development",            tri:"☴☶", key:"Patience · step by step · ripening", body:"Growth here is slow and certain, like a tree on a mountain. Keep the pace — results come.",                          guidance:["Trust the slow process.","Each step prepares the next.","Haste disrupts what ripens slowly."]},
+    {n:54, zh:"歸妹", name:"Gui Mei",nl:"The Marrying Maiden",    tri:"☳☱", key:"Positioning · modesty · waiting",    body:"Not the lead role now. Learn the situation from the inside. Patience and modesty will bring you further in time.",     guidance:["Take a supporting role — temporarily.","Observe before you act.","Your moment comes — preserve your strength."]},
+    {n:55, zh:"豐", name:"Feng",     nl:"Abundance",              tri:"☳☲", key:"Peak · light · use it now",          body:"You stand at a peak. Use the energy of this moment fully — it is temporary, like every summit.",                       guidance:["Act now — don't wait.","Abundance asks for use, not hoarding.","Savour this peak consciously."]},
+    {n:56, zh:"旅", name:"Lü",       nl:"The Wanderer",           tri:"☲☶", key:"Travelling · adapting · being humble",body:"You are a guest in this situation. Go light and flexible. Standing out works against you — move with the current.",  guidance:["Adapt to your surroundings without losing yourself.","Modesty opens more doors than assertiveness.","What do you learn on this journey through?"]},
+    {n:57, zh:"巽", name:"Xun",      nl:"The Gentle",             tri:"☴☴", key:"Gentleness · penetrating · subtle",  body:"Wind bends the tall grass but does not pull at it. Subtle, persistent influence works better than force.",            guidance:["Be consistent and gentle, not hard.","Lasting influence penetrates slowly.","Adapting is stronger than persisting here."]},
+    {n:58, zh:"兌", name:"Dui",      nl:"The Joyous",             tri:"☱☱", key:"Joy · connection · exchange",        body:"Genuine joy and exchange. Today is good for connection, conversation and sharing what brings you happiness.",          guidance:["Seek connection from joy.","Be open — joy is contagious.","Sharing doubles the good."]},
+    {n:59, zh:"渙", name:"Huan",     nl:"Dispersion",             tri:"☴☵", key:"Dissolving · connecting · letting flow",body:"Rigid patterns dissolve. Let the boundaries soften. Connection and gentleness bring more now than structure.",      guidance:["Let go of your grip on how it 'should' be.","What do you dissolve today?","Softness binds better than rules."]},
+    {n:60, zh:"節", name:"Jie",      nl:"Limitation",             tri:"☵☱", key:"Boundaries · keeping measure · structure",body:"Limits are needed for growth. Too much freedom paralyses. Choose your limitations consciously — they give direction and shape.",guidance:["Set one clear boundary for yourself.","Limitation is the mother of structure.","Too much and too little are both traps."]},
+    {n:61, zh:"中孚", name:"Zhong Fu",nl:"Inner Truth",           tri:"☴☱", key:"Sincerity · trust · depth",          body:"Inner truth speaks even without words. Others feel your sincerity. Be honest from the inside out.",                     guidance:["Let your inner state guide your actions.","Trust is built on truth, not words.","What is your deepest truth right now?"]},
+    {n:62, zh:"小過", name:"Xiao Guo",nl:"Small Exceeding",       tri:"☳☶", key:"Small steps · modesty · care",       body:"Small transgression is allowed — large is not. Go carefully, keep it small, be modest.",                              guidance:["Take one step more — not three.","This is not the moment for grand gestures.","Small and certain brings you further now."]},
+    {n:63, zh:"既濟", name:"Ji Ji",  nl:"After Completion",       tri:"☵☲", key:"Complete · guarding · vigilance",    body:"Something is complete. But completion is not an endpoint — it asks for vigilance. Preserve what you have achieved.",   guidance:["Celebrate it — then stay watchful.","What do you need to preserve this?","Completion is also the start of the next thing."]},
+    {n:64, zh:"未濟", name:"Wei Ji", nl:"Before Completion",      tri:"☲☵", key:"Transition · almost · don't act too soon",body:"You are just before the end, but not yet there. Haste spoils. Take the last steps calmly and consciously.",     guidance:["Almost is not done — stay present.","Haste in the final phase costs the most.","The transition itself has its own value."]}
+  ];
+
+  // Daily hexagram based on the lunar I Ching calendar
+  function getIChingData(date) {
+    const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+    // Eenvoudige maar betekenisvolle toewijzing: cyclus van 64 dagen
+    // gebaseerd op verloop van het jaar + maancyclus voor variatie
+    const baseNewMoon = new Date('2000-01-06T18:14:00Z');
+    const synodicMonth = 29.53058867;
+    const diffDays = (date - baseNewMoon) / 86400000;
+    const lunarDay = Math.floor(((diffDays % synodicMonth) + synodicMonth) % synodicMonth);
+
+    // Combineer dag van het jaar met lunaire dag voor unieke dagelijkse waarde
+    const combined = (dayOfYear + lunarDay * 5) % 64;
+    const idx = combined; // 0-63
+    return HEXAGRAMS[idx];
   }
 
-  function modPositive(n, m) { return ((n % m) + m) % m; }
+  /* ── MAYA MATH ── */
+  const pad2 = n => String(n).padStart(2,"0");
+  function gregorianToJDN(y,m,d){
+    const a=Math.floor((14-m)/12),y2=y+4800-a,m2=m+12*a-3;
+    return d+Math.floor((153*m2+2)/5)+365*y2+Math.floor(y2/4)-Math.floor(y2/100)+Math.floor(y2/400)-32045;
+  }
+  function longCountFromDays(days){
+    const B=144000,K=7200,T=360,U=20;
+    const b=Math.floor(days/B);days%=B;
+    const k=Math.floor(days/K);days%=K;
+    const t=Math.floor(days/T);days%=T;
+    const u=Math.floor(days/U);days%=U;
+    return{baktun:b,katun:k,tun:t,uinal:u,kin:days};
+  }
+  function tzolkinFromDays(days){ return{number:((days+3)%13)+1,name:TZOLKIN_NAMES[(days+19)%20]}; }
+  function haabFromDays(days){
+    const h=(days+348)%365;
+    if(h>=360)return{day:h-360,month:"Wayeb'"};
+    return{day:h%20,month:HAAB_MONTHS[Math.floor(h/20)]};
+  }
+  function modPos(n,m){return((n%m)+m)%m;}
+  function computeForDate(iso,corr){
+    const[yy,mm,dd]=iso.split("-").map(Number);
+    const jdn=gregorianToJDN(yy,mm,dd);
+    const delta=jdn-corr;
+    const daysLC=modPos(delta,1872000*20);
+    return{jdn,delta,lc:longCountFromDays(daysLC),tz:tzolkinFromDays(modPos(delta,260)),hb:haabFromDays(modPos(delta,365))};
+  }
+  function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");}
 
-  function computeForDate(dateISO, correlation) {
-    const [yy, mm, dd] = dateISO.split("-").map(Number);
-    const jdn = gregorianToJDN(yy, mm, dd);
-    const daysSinceBase = jdn - correlation;
-    const daysLC = modPositive(daysSinceBase, 1872000 * 20);
-    return {
-      jdn, daysSinceBase,
-      lc: longCountFromDays(daysLC),
-      tz: tzolkinFromDays(modPositive(daysSinceBase, 260)),
-      hb: haabFromDays(modPositive(daysSinceBase, 365))
-    };
+  /* ── COMBINED MAYA + I CHING READING ── */
+  function buildCombinedReading(toneNum, dayName, hex) {
+    const tone = TZOLKIN_TONES[toneNum];
+    const day  = TZOLKIN_DAYS[dayName];
+    if (!tone || !day) return "";
+    const toneCore = tone.short.split('·')[0].trim().toLowerCase();
+    const dayCore  = day.short.split('·')[0].trim().toLowerCase();
+    const hexCore  = hex.key.split('·')[0].trim().toLowerCase();
+    return `Today's Maya tone carries the quality of <em>${toneCore}</em> — the way the day moves. The day sign ${dayName} brings the theme of <em>${dayCore}</em>. I Ching hexagram ${hex.n} (${hex.nl}) adds the energy of <em>${hexCore}</em>. Together they point to a day where ${tone.body.split('.')[0].toLowerCase()} — and where ${hex.body.split('.')[0].toLowerCase()}.`;
   }
 
-  function escapeHtml(s) {
-    return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  /* ── RENDER HELPERS ── */
+  function renderTone(n){
+    const t=TZOLKIN_TONES[n]; if(!t)return"";
+    return`<div class="expand-block">
+      <div class="section-sublabel">Tone ${n} — ${esc(t.name)}</div>
+      <div class="detail-body">
+        <div class="detail-sub">${esc(t.short)}</div>
+        <div class="detail-text">${esc(t.body)}</div>
+        <ul class="detail-bullets">${t.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>
+      </div>
+    </div>`;
+  }
+  function renderDay(name){
+    const d=TZOLKIN_DAYS[name]; if(!d)return"";
+    return`<div class="expand-block">
+      <div class="section-sublabel">Day Sign — ${esc(d.title)}</div>
+      <div class="detail-body">
+        <div class="detail-sub">${esc(d.short)}</div>
+        <div class="detail-text">${esc(d.body)}</div>
+        <ul class="detail-bullets">${d.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>
+      </div>
+    </div>`;
   }
 
-  function renderToneDetails(n) {
-    const t = TZOLKIN_TONES[n];
-    if (!t) return "";
-    return `
-      <div class="tone-title"><b>Toon ${n}: ${escapeHtml(t.name)}</b> <span class="smallmono">(${escapeHtml(t.short)})</span></div>
-      <div class="tone-body">${escapeHtml(t.body)}</div>
-      <ul class="tone-bullets">${t.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}</ul>
-    `;
-  }
+  /* ── MAIN RENDER ── */
+  const elDate=document.getElementById("date");
+  const elCorr=document.getElementById("corr");
+  const elOut=document.getElementById("out");
 
-  function renderDayDetails(dayName) {
-    const d = TZOLKIN_DAYS[dayName];
-    if (!d) return "";
-    return `
-      <div class="tone-title"><b>Dagnaam: ${escapeHtml(d.title)}</b> <span class="smallmono">(${escapeHtml(d.short)})</span></div>
-      <div class="tone-body">${escapeHtml(d.body)}</div>
-      <ul class="tone-bullets">${d.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}</ul>
-    `;
-  }
+  function render(){
+    const iso=elDate.value; if(!iso)return;
+    const corr=Number(elCorr.value);
+    const r=computeForDate(iso,corr);
+    const lcStr=`${r.lc.baktun}.${r.lc.katun}.${r.lc.tun}.${r.lc.uinal}.${r.lc.kin}`;
 
-  function setToday() {
-    const now = new Date();
-    elDate.value = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
-  }
+    // Parse date for moon & celtic
+    const [yy,mm,dd] = iso.split("-").map(Number);
+    const dateObj = new Date(yy, mm-1, dd, 12, 0, 0);
+    const moon = getMoonData(dateObj);
+    const celtic = getCelticData(dateObj);
+    const iching = getIChingData(dateObj);
 
-  function render() {
-    const iso = elDate.value;
-    if (!iso) return;
-    const correlation = Number(elCorr.value);
+    elOut.innerHTML=`<div class="anim-in">
 
-    const r = computeForDate(iso, correlation);
-    const lcStr = `${r.lc.baktun}.${r.lc.katun}.${r.lc.tun}.${r.lc.uinal}.${r.lc.kin}`;
-    const tzStr = `${r.tz.number} ${r.tz.name}`;
-    const hbStr = `${r.hb.day} ${r.hb.month}`;
+      <!-- MOON -->
+      <div class="moon-block">
+        <div class="section-label">Moon</div>
+        <div class="moon-main-row">
+          <div class="moon-symbol">${moonSVG(moon.illumination, moon.cyclePos, moon.synodicMonth)}</div>
+          <div class="moon-info">
+            <div class="moon-phase-name">${esc(moon.phase.name)}</div>
+            <div class="moon-illumination">${moon.illumination}% illuminated</div>
+          </div>
+        </div>
+        <div class="moon-next">
+          ${moon.daysUntilNext === 0
+            ? `Today: ${esc(moon.nextPhaseName)}`
+            : moon.daysUntilNext === 1
+              ? `Tomorrow: ${esc(moon.nextPhaseName)}`
+              : `${moon.daysUntilNext} days until ${esc(moon.nextPhaseName)}`}
+        </div>
+      </div>
 
-    elOut.innerHTML = `
-      <div class="big mono">${lcStr}</div>
+      <!-- CELTIC -->
+      <div class="celtic-block">
+        <div class="section-label">Celtic Season</div>
+        <div class="celtic-main-row">
+          <div>
+            <div class="celtic-season-name">${esc(celtic.current.name)}</div>
+            <div class="celtic-keywords">${esc(celtic.current.keywords)}</div>
+          </div>
+        </div>
+        <div class="celtic-next">
+          ${celtic.daysUntil === 0
+            ? `Today: ${esc(celtic.next.name)}`
+            : celtic.daysUntil === 1
+              ? `Tomorrow: ${esc(celtic.next.name)}`
+              : `${celtic.daysUntil} days until ${esc(celtic.next.name)}`}
+        </div>
+      </div>
 
-      <div class="kv">
-        <div class="k">Tzolk’in</div>
-        <div class="v mono">
-          ${tzStr}
-          <details style="margin-top:12px;" open>
-            <summary>Uitleg dagtoon (toon ${r.tz.number})</summary>
-            ${renderToneDetails(r.tz.number)}
-          </details>
-          <details open>
-            <summary>Uitleg dag (dagnnaam ${escapeHtml(r.tz.name)})</summary>
-            ${renderDayDetails(r.tz.name)}
-          </details>
+      <!-- LANG COUNT -->
+      <div class="long-count-display">
+        <div class="long-count-label">Maya Long Count</div>
+        <div class="long-count-number">${lcStr}</div>
+      </div>
+
+      <!-- TZOLK'IN + I CHING -->
+      <div class="tzolkin-block">
+        <div class="section-label">Maya Tzolk'in</div>
+
+        <div class="tzolkin-name-row">
+          <div class="tzolkin-number">${r.tz.number}</div>
+          <div class="tzolkin-name">${esc(r.tz.name)}</div>
+        </div>
+        <div class="tzolkin-sub">${esc(TZOLKIN_TONES[r.tz.number]?.short||"")} &nbsp;·&nbsp; ${esc(TZOLKIN_DAYS[r.tz.name]?.short||"")}</div>
+
+        ${renderTone(r.tz.number)}
+        ${renderDay(r.tz.name)}
+
+        <!-- I CHING -->
+        <div class="expand-block">
+          <div class="iching-header">
+            <div class="iching-tri">${iching.tri}</div>
+            <div class="iching-head-info">
+              <div class="section-sublabel" style="border:none; margin:0; padding:0;">I Ching — ${esc(iching.nl)}</div>
+              <div class="iching-head-meta">${iching.zh} · ${esc(iching.name)} · no. ${iching.n}</div>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="detail-sub">${esc(iching.key)}</div>
+            <div class="detail-text">${esc(iching.body)}</div>
+            <ul class="detail-bullets">${iching.guidance.map(g=>`<li>${esc(g)}</li>`).join("")}</ul>
+          </div>
         </div>
 
-        <div class="k">Haab’</div><div class="v mono">${hbStr}</div>
-        <div class="k">JDN</div><div class="v mono">${r.jdn}</div>
-        <div class="k">Δ dagen</div><div class="v mono">${r.daysSinceBase}</div>
-        <div class="k">Correlatie</div><div class="v mono">${correlation}</div>
+        <!-- SUMMARY -->
+        <div class="combined-reading" style="margin-top:20px;">
+          <div class="combined-label">Today's reading</div>
+          <div class="combined-body">${buildCombinedReading(r.tz.number, r.tz.name, iching)}</div>
+        </div>
       </div>
 
-      <div class="hint">
-        Snelle lezing: <span class="smallmono">toon</span> = hoe de dag beweegt • <span class="smallmono">dagnnaam</span> = het thema waar het over gaat.
+      <div class="reading-hint">
+        <strong>Tone</strong> = how the day moves &nbsp;·&nbsp; <strong>Day Sign</strong> = the theme &nbsp;·&nbsp; <strong>Hexagram</strong> = the wisdom beneath
       </div>
-    `;
+    </div>`;
   }
 
-  btnCalc.addEventListener("click", render);
-  btnToday.addEventListener("click", () => { setToday(); render(); });
-  elCorr.addEventListener("change", render);
+  function setToday(){
+    const n=new Date();
+    elDate.value=`${n.getFullYear()}-${pad2(n.getMonth()+1)}-${pad2(n.getDate())}`;
+  }
 
-  setToday();
-  render();
+  document.getElementById("calc").addEventListener("click",render);
+  document.getElementById("today").addEventListener("click",()=>{setToday();render();});
+  elCorr.addEventListener("change",render);
+
+  setToday(); render();
+
+  /* ── STARFIELD ── */
+  const starsEl=document.getElementById("stars");
+  for(let i=0;i<45;i++){
+    const s=document.createElement("div");
+    s.className="star";
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${3+Math.random()*5}s;--delay:${Math.random()*7}s;--max-op:${0.12+Math.random()*0.28};width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;`;
+    starsEl.appendChild(s);
+  }
 })();
 </script>
 </body>
