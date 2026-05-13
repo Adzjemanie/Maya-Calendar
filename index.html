@@ -46,7 +46,8 @@
     }
 
     /* ── LAYOUT ── */
-    .wrap { position:relative; z-index:1; max-width:680px; margin:0 auto; padding:0 22px 70px; }
+    .wrap { position:relative; z-index:1; max-width:680px; margin:0 auto; padding:0 18px 70px; }
+    @media(max-width:480px){ .wrap{ padding:0 14px 70px; } }
 
     /* ── HEADER ── */
     header { text-align:center; padding:52px 0 38px; }
@@ -321,22 +322,15 @@
     <div class="section-label">Your cosmic date</div>
 
     <div class="fields">
-      <div class="field-group">
+      <div class="field-group" style="grid-column:1/-1;">
         <label for="date">Date</label>
         <input id="date" type="date" />
-      </div>
-      <div class="field-group">
-        <label for="corr">Correlation</label>
-        <select id="corr">
-          <option value="584283">GMT (584283)</option>
-          <option value="584285">584285</option>
-        </select>
       </div>
     </div>
 
     <div class="btn-row">
-      <button class="btn-primary" id="calc">☽ Calculate</button>
-      <button class="btn-secondary" id="today">Today</button>
+      <button class="btn-primary" id="calc" type="button">☽ Calculate</button>
+      <button class="btn-secondary" id="today" type="button">Today</button>
     </div>
 
     <div class="result-area" id="out" aria-live="polite">
@@ -714,13 +708,12 @@
 
   /* ── MAIN RENDER ── */
   const elDate=document.getElementById("date");
-  const elCorr=document.getElementById("corr");
+  const CORR = 584283; // GMT correlation
   const elOut=document.getElementById("out");
 
   function render(){
     const iso=elDate.value; if(!iso)return;
-    const corr=Number(elCorr.value);
-    const r=computeForDate(iso,corr);
+    const r=computeForDate(iso, CORR);
     const lcStr=`${r.lc.baktun}.${r.lc.katun}.${r.lc.tun}.${r.lc.uinal}.${r.lc.kin}`;
 
     // Parse date for moon & celtic
@@ -822,9 +815,14 @@
     elDate.value=`${n.getFullYear()}-${pad2(n.getMonth()+1)}-${pad2(n.getDate())}`;
   }
 
-  document.getElementById("calc").addEventListener("click",render);
-  document.getElementById("today").addEventListener("click",()=>{setToday();render();});
-  elCorr.addEventListener("change",render);
+  function bindBtn(id, fn) {
+    const el = document.getElementById(id);
+    el.addEventListener("click", fn);
+    el.addEventListener("touchend", function(e){ e.preventDefault(); fn(); });
+  }
+
+  bindBtn("calc", render);
+  bindBtn("today", ()=>{ setToday(); render(); });
 
   setToday(); render();
 
